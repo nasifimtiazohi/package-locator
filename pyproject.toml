@@ -24,6 +24,8 @@ python = "^3.6.1"
 click = "^8.0.0"
 rich = "^10.3.0"
 PyYAML = "^5.4.1"
+requests = "^2.26.0"
+giturlparse = "^0.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.3"
