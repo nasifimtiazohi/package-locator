@@ -2,8 +2,6 @@ from package_locator.common import *
 from package_locator.directory import *
 import requests
 import json
-import collections
-from giturlparse import parse
 
 
 def get_npm_location(package):
