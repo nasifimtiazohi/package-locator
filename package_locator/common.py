@@ -56,7 +56,6 @@ def search_for_github_repo(data):
             if isinstance(data[k], str):
                 candidates = re.findall(url_pattern, data[k])
                 for c in candidates:
-                    print(c)
                     parsed_url = parse(c)
                     if parsed_url.valid:
                         urls.add("https://github.com/{}/{}".format(parsed_url.owner, parsed_url.repo))

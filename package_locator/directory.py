@@ -30,7 +30,10 @@ def get_package_name_from_npm_json(filepath):
     with open(filepath, "r") as f:
         try:
             data = json.load(f)
-            return data.get("name", None)
+            name = data.get("name", None)
+            if name:
+                name = name.replace("/", "-")
+            return name
         except:
             # there could be test files for erroneous data
             return None
@@ -66,7 +69,9 @@ def get_npm_subdir(package, repo_url):
     if not subdirs:
         raise NotPackageRepository
     for subdir in subdirs:
-        if get_package_name_from_npm_json(join(repo_path, subdir)) == package:
+        name = get_package_name_from_npm_json(join(repo_path, subdir))
+        if name and name.endswith(package):
+            print(subdir)
             return subdir.removesuffix(manifest_filename).removesuffix("/")
 
 

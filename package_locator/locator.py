@@ -8,6 +8,7 @@ import json
 
 
 def get_base_repo_url(s):
+    print(s)
     if s:
         # removesuffix is due to the bug in giturlparse package
         s = parse(s.removesuffix("/"))
@@ -20,6 +21,9 @@ def get_npm_location(package):
 
     # TODO: do all npm packages have repo_url data?
     repo_url = get_base_repo_url(data["repository"]["url"])
+    directory = data["repository"].get("directory", None)
+    if directory:
+        return repo_url, directory
     subdir = get_npm_subdir(package, repo_url)
     return repo_url, subdir
 

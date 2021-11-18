@@ -6,7 +6,7 @@ from package_locator.common import *
 def test_npm():
     assert get_repository_url_and_subdir(NPM, "lodash") == ("https://github.com/lodash/lodash", "")
     assert get_repository_url_and_subdir(NPM, "react") == ("https://github.com/facebook/react", "packages/react")
-    print(get_repository_url_and_subdir(NPM, "babel-core"))
+    assert get_repository_url_and_subdir(NPM, "babel-core") == ("https://github.com/babel/babel", "packages/babel-core")
 
 
 def test_rubygems():
