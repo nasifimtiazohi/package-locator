@@ -22,11 +22,26 @@ def get_package_name_from_npm_json(filepath):
 
 
 def validate_npm_package_directory(package, repo_url, subdir):
-    npm_manifest_file = "package.json"
+    manifest_filename = "package.json"
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    target_manifest = "{}/{}".format(subdir, npm_manifest_file) if subdir else npm_manifest_file
-    assert target_manifest in locate_file_in_repo(repo_path, npm_manifest_file)
+    target_manifest = "{}/{}".format(subdir, manifest_filename) if subdir else manifest_filename
+    assert target_manifest in locate_file_in_repo(repo_path, manifest_filename)
     return get_package_name_from_npm_json(join(repo_path, target_manifest)) == package
+
+
+def get_rubygems_subdir(package, repo_url):
+    manifest_filename = "{}.gemspec".format(package)
+    temp_dir = tempfile.TemporaryDirectory()
+    repo = Repo.clone_from(repo_url, temp_dir.name)
+    repo_path = Path(repo.git_dir).parent
+
+    target_manifest = locate_file_in_repo(repo_path, manifest_filename)
+    print(target_manifest)
+    if not target_manifest:
+        return None
+    assert len(target_manifest) == 1
+    subdir = target_manifest[0].removesuffix("{}".format(manifest_filename)).removesuffix("/")
+    return subdir

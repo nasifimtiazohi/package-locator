@@ -39,3 +39,13 @@ def test_validate_npm_package_directory():
     subdir = ""
     repo_url = "https://github.com/lodash/lodash"
     assert validate_npm_package_directory(package, repo_url, subdir)
+
+
+def test_get_rubygems_subdir():
+    package = "ahoy"
+    repo_url = "https://github.com/matsadler/ahoy"
+    assert get_rubygems_subdir(package, repo_url) == ""
+
+    package = "bundler"
+    repo_url = "https://github.com/rubygems/rubygems"
+    assert get_rubygems_subdir(package, repo_url) == "bundler"

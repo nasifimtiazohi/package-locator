@@ -44,7 +44,6 @@ def search_for_github_repo(data):
             parsed_url = parse(data[k])
             print(data[k])
             if parsed_url.valid:
-                print(parsed_url)
                 urls.add(parsed_url.url2https)
 
     return urls
