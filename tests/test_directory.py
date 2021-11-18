@@ -21,6 +21,10 @@ repo_url = "https://github.com/php-fig/log"
 temp_dir_d = tempfile.TemporaryDirectory()
 psrlog_repo = Repo.clone_from(repo_url, temp_dir_d.name)
 
+repo_url = "https://github.com/diem/whackadep"
+temp_dir_e = tempfile.TemporaryDirectory()
+depdive_repo = Repo.clone_from(repo_url, temp_dir_e.name)
+
 
 def test_locate_file_in_repo():
     file = "package.json"
@@ -76,3 +80,9 @@ def test_get_pypi_subdir():
     package = "django"
     repo_url = "https://github.com/django/django"
     assert get_pypi_subdir(package, repo_url) == ""
+
+
+def test_get_cargo_subdir():
+    package = "depdive"
+    repo_url = "https://github.com/diem/whackadep"
+    assert get_cargo_subdir(package, repo_url) == "depdive"

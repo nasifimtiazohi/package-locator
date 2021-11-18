@@ -4,6 +4,7 @@ import json
 from git import Repo
 from pathlib import Path
 from os.path import join, relpath
+import toml
 
 from package_locator.common import NotPackageRepository
 
@@ -37,6 +38,12 @@ def get_package_name_from_composer_json(filepath):
         return data.get("name", None)
 
 
+def get_package_name_from_cargo_toml(filepath):
+    with open(filepath, "r") as f:
+        data = toml.load(f)
+        return data.get("package", {}).get("name", None)
+
+
 def validate_npm_package_directory(package, repo_url, subdir):
     manifest_filename = "package.json"
     temp_dir = tempfile.TemporaryDirectory()
@@ -63,6 +70,7 @@ def get_rubygems_subdir(package, repo_url):
 
 
 def get_composer_subdir(package, repo_url):
+    print(repo_url)
     manifest_filename = "composer.json"
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
@@ -73,6 +81,20 @@ def get_composer_subdir(package, repo_url):
         raise NotPackageRepository
     for subdir in subdirs:
         if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
+            return subdir.removesuffix(manifest_filename).removesuffix("/")
+
+
+def get_cargo_subdir(package, repo_url):
+    manifest_filename = "Cargo.toml"
+    temp_dir = tempfile.TemporaryDirectory()
+    repo = Repo.clone_from(repo_url, temp_dir.name)
+    repo_path = Path(repo.git_dir).parent
+
+    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    if not subdirs:
+        raise NotPackageRepository
+    for subdir in subdirs:
+        if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
 
 
