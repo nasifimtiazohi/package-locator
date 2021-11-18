@@ -14,3 +14,7 @@ def test_rubygems():
 def test_pypi():
     assert get_pypi_location("django") == ("https://github.com/django/django", "")
     assert get_pypi_location("rsa") == ("https://github.com/sybrenstuvel/python-rsa", "")
+
+
+def test_composer():
+    assert get_composer_location("psr/log") == ("https://github.com/php-fig/log", "")

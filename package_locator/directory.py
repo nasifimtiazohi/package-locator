@@ -31,6 +31,12 @@ def get_package_name_from_npm_json(filepath):
         return data.get("name", None)
 
 
+def get_package_name_from_composer_json(filepath):
+    with open(filepath, "r") as f:
+        data = json.load(f)
+        return data.get("name", None)
+
+
 def validate_npm_package_directory(package, repo_url, subdir):
     manifest_filename = "package.json"
     temp_dir = tempfile.TemporaryDirectory()
@@ -49,12 +55,25 @@ def get_rubygems_subdir(package, repo_url):
     repo_path = Path(repo.git_dir).parent
 
     target_manifest = locate_file_in_repo(repo_path, manifest_filename)
-    print(target_manifest)
     if not target_manifest:
         raise NotPackageRepository
     assert len(target_manifest) == 1
-    subdir = target_manifest[0].removesuffix("{}".format(manifest_filename)).removesuffix("/")
+    subdir = target_manifest[0].removesuffix(manifest_filename).removesuffix("/")
     return subdir
+
+
+def get_composer_subdir(package, repo_url):
+    manifest_filename = "composer.json"
+    temp_dir = tempfile.TemporaryDirectory()
+    repo = Repo.clone_from(repo_url, temp_dir.name)
+    repo_path = Path(repo.git_dir).parent
+
+    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    if not subdirs:
+        raise NotPackageRepository
+    for subdir in subdirs:
+        if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
+            return subdir.removesuffix(manifest_filename).removesuffix("/")
 
 
 def get_pypi_subdir(package, repo_url):
@@ -69,4 +88,4 @@ def get_pypi_subdir(package, repo_url):
     dir = locate_dir_in_repo(repo_path, package)
     if not dir:
         raise NotPackageRepository
-    return dir.removesuffix(package)
+    return dir.removesuffix(package).removesuffix("/")

@@ -17,6 +17,10 @@ repo_url = "https://github.com/django/django"
 temp_dir_c = tempfile.TemporaryDirectory()
 django_repo = Repo.clone_from(repo_url, temp_dir_c.name)
 
+repo_url = "https://github.com/php-fig/log"
+temp_dir_d = tempfile.TemporaryDirectory()
+psrlog_repo = Repo.clone_from(repo_url, temp_dir_d.name)
+
 
 def test_locate_file_in_repo():
     file = "package.json"
@@ -54,6 +58,12 @@ def test_get_rubygems_subdir():
     package = "bundler"
     repo_url = "https://github.com/rubygems/rubygems"
     assert get_rubygems_subdir(package, repo_url) == "bundler"
+
+
+def test_get_composer_subdir():
+    package = "psr/log"
+    repo_url = "https://github.com/php-fig/log"
+    assert get_composer_subdir(package, repo_url) == ""
 
 
 def test_locate_dir_in_repo():

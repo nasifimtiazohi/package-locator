@@ -58,6 +58,34 @@ def get_pypi_location(package):
             continue
 
 
+def get_composer_location(package):
+    url = "https://repo.packagist.org/p2/{}.json".format(package)
+    data = json.loads(requests.get(url).content)
+    data = data["packages"][package][0]
+    repo_url = data.get("source", {}).get("url", None)
+    if repo_url:
+        try:
+            subdir = get_composer_subdir(package, repo_url)
+            if subdir:
+                return repo_url.removesuffix(".git"), subdir
+        except NotPackageRepository:
+            return None
+
+    urls = search_for_github_repo(data)
+    for url in urls:
+        try:
+            subdir = get_composer_subdir(package, url)
+            return url.removesuffix(".git"), subdir
+        except NotPackageRepository:
+            continue
+
+
 def get_repository_url_and_subdir(ecosystem, package):
     if ecosystem == NPM:
         return get_npm_location(package)
+    elif ecosystem == PYPI:
+        return get_pypi_location(package)
+    elif ecosystem == RUBYGEMS:
+        return get_rubygems_location(package)
+    elif ecosystem == COMPOSER:
+        return get_composer_location(package)
