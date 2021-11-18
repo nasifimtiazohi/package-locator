@@ -1,3 +1,4 @@
+from git import repo
 from package_locator import locator
 from package_locator.common import NPM
 import tempfile
@@ -11,6 +12,10 @@ react_repo = Repo.clone_from(repo_url, temp_dir_a.name)
 repo_url = "https://github.com/lodash/lodash"
 temp_dir_b = tempfile.TemporaryDirectory()
 lodash_repo = Repo.clone_from(repo_url, temp_dir_b.name)
+
+repo_url = "https://github.com/django/django"
+temp_dir_c = tempfile.TemporaryDirectory()
+django_repo = Repo.clone_from(repo_url, temp_dir_c.name)
 
 
 def test_locate_file_in_repo():
@@ -49,3 +54,15 @@ def test_get_rubygems_subdir():
     package = "bundler"
     repo_url = "https://github.com/rubygems/rubygems"
     assert get_rubygems_subdir(package, repo_url) == "bundler"
+
+
+def test_locate_dir_in_repo():
+    package = "django"
+    path = Path(django_repo.git_dir).parent
+    assert locate_dir_in_repo(path, package) == package
+
+
+def test_get_pypi_subdir():
+    package = "django"
+    repo_url = "https://github.com/django/django"
+    assert get_pypi_subdir(package, repo_url) == ""

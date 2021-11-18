@@ -1,5 +1,6 @@
 import collections
 from giturlparse import parse
+import re
 
 CARGO = "Cargo"
 COMPOSER = "Composer"
@@ -10,6 +11,10 @@ NUGET = "NuGet"
 PYPI = PIP = "pip"
 RUBYGEMS = "RubyGems"
 ecosystems = [CARGO, COMPOSER, GO, MAVEN, NPM, NUGET, PYPI, RUBYGEMS]
+
+
+class NotPackageRepository(Exception):
+    pass
 
 
 def flatten(dictionary, parent_key=False, separator="."):
@@ -40,10 +45,20 @@ def search_for_github_repo(data):
 
     data = flatten(data)
     for k in data.keys():
-        if isinstance(data[k], str) and data[k].startswith("https://github.com"):
+        if isinstance(data[k], str) and data[k].startswith("https://github.com") and " " not in data[k]:
             parsed_url = parse(data[k])
-            print(data[k])
             if parsed_url.valid:
                 urls.add(parsed_url.url2https)
+
+    if not urls:
+        url_pattern = r"(https?://[www.]?github.com[^\s|)|.]+)"
+        for k in data.keys():
+            if isinstance(data[k], str):
+                candidates = re.findall(url_pattern, data[k])
+                for c in candidates:
+                    print(c)
+                    parsed_url = parse(c)
+                    if parsed_url.valid:
+                        urls.add("https://github.com/{}/{}".format(parsed_url.owner, parsed_url.repo))
 
     return urls
