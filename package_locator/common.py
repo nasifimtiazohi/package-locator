@@ -8,7 +8,7 @@ GO = "Go"
 MAVEN = "Maven"
 NPM = "npm"
 NUGET = "NuGet"
-PYPI = PIP = "pip"
+PYPI = "pypi"
 RUBYGEMS = "RubyGems"
 ecosystems = [CARGO, COMPOSER, GO, MAVEN, NPM, NUGET, PYPI, RUBYGEMS]
 

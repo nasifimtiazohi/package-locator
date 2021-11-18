@@ -1,5 +1,7 @@
 from git import repo
+import package_locator
 from package_locator.common import *
+from giturlparse import parse
 from package_locator.directory import *
 import requests
 import json
@@ -122,3 +124,5 @@ def get_repository_url_and_subdir(ecosystem, package):
         return get_rubygems_location(package)
     elif ecosystem == COMPOSER:
         return get_composer_location(package)
+    elif ecosystem == CARGO:
+        return get_cargo_location(package)
