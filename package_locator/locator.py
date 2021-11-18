@@ -20,8 +20,7 @@ def get_npm_location(package):
 
     # TODO: do all npm packages have repo_url data?
     repo_url = get_base_repo_url(data["repository"]["url"])
-    subdir = data["repository"].get("directory", "")
-    validate_npm_package_directory(package, repo_url, subdir)
+    subdir = get_npm_subdir(package, repo_url)
     return repo_url, subdir
 
 

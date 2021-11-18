@@ -28,31 +28,46 @@ def locate_dir_in_repo(repo_path, target_dir):
 
 def get_package_name_from_npm_json(filepath):
     with open(filepath, "r") as f:
-        data = json.load(f)
-        return data.get("name", None)
+        try:
+            data = json.load(f)
+            return data.get("name", None)
+        except:
+            # there could be test files for erroneous data
+            return None
 
 
 def get_package_name_from_composer_json(filepath):
     with open(filepath, "r") as f:
-        data = json.load(f)
-        return data.get("name", None)
+        try:
+            data = json.load(f)
+            return data.get("name", None)
+        except:
+            # there could be test files for erroneous data
+            return None
 
 
 def get_package_name_from_cargo_toml(filepath):
     with open(filepath, "r") as f:
-        data = toml.load(f)
-        return data.get("package", {}).get("name", None)
+        try:
+            data = toml.load(f)
+            return data.get("package", {}).get("name", None)
+        except:
+            # there could be test files for erroneous data
+            return None
 
 
-def validate_npm_package_directory(package, repo_url, subdir):
+def get_npm_subdir(package, repo_url):
     manifest_filename = "package.json"
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    target_manifest = "{}/{}".format(subdir, manifest_filename) if subdir else manifest_filename
-    assert target_manifest in locate_file_in_repo(repo_path, manifest_filename)
-    return get_package_name_from_npm_json(join(repo_path, target_manifest)) == package
+    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    if not subdirs:
+        raise NotPackageRepository
+    for subdir in subdirs:
+        if get_package_name_from_npm_json(join(repo_path, subdir)) == package:
+            return subdir.removesuffix(manifest_filename).removesuffix("/")
 
 
 def get_rubygems_subdir(package, repo_url):
@@ -70,7 +85,6 @@ def get_rubygems_subdir(package, repo_url):
 
 
 def get_composer_subdir(package, repo_url):
-    print(repo_url)
     manifest_filename = "composer.json"
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)

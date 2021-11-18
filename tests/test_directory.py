@@ -42,18 +42,6 @@ def test_get_package_name_from_npm_json():
     assert get_package_name_from_npm_json(join(path, file)) == package
 
 
-def test_validate_npm_package_directory():
-    package = "react-dom"
-    subdir = "packages/react-dom"
-    repo_url = "https://github.com/facebook/react"
-    assert validate_npm_package_directory(package, repo_url, subdir)
-
-    package = "lodash"
-    subdir = ""
-    repo_url = "https://github.com/lodash/lodash"
-    assert validate_npm_package_directory(package, repo_url, subdir)
-
-
 def test_get_rubygems_subdir():
     package = "ahoy"
     repo_url = "https://github.com/matsadler/ahoy"
