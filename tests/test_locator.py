@@ -7,6 +7,10 @@ def test_npm():
     assert get_repository_url_and_subdir(NPM, "lodash") == ("https://github.com/lodash/lodash", "")
     assert get_repository_url_and_subdir(NPM, "react") == ("https://github.com/facebook/react", "packages/react")
     assert get_repository_url_and_subdir(NPM, "babel-core") == ("https://github.com/babel/babel", "packages/babel-core")
+    assert get_repository_url_and_subdir(NPM, "@babel/plugin-syntax-typescript") == (
+        "https://github.com/babel/babel",
+        "packages/babel-plugin-syntax-typescript",
+    )
 
 
 def test_rubygems():

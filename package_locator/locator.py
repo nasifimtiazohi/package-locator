@@ -8,7 +8,6 @@ import json
 
 
 def get_base_repo_url(s):
-    print(s)
     if s:
         # removesuffix is due to the bug in giturlparse package
         s = parse(s.removesuffix("/"))
