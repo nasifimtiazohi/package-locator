@@ -41,3 +41,7 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
+
+
+def test_temp():
+    print(get_repository_url_and_subdir(PYPI, "six"))

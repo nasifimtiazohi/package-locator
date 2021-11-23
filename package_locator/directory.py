@@ -68,12 +68,11 @@ def get_npm_subdir(package, repo_url):
     repo_path = Path(repo.git_dir).parent
 
     subdirs = locate_file_in_repo(repo_path, manifest_filename)
-    if not subdirs:
-        raise NotPackageRepository
     for subdir in subdirs:
         name = get_package_name_from_npm_json(join(repo_path, subdir))
         if name and (name.endswith(package) or name.replace("/", "-").endswith(package.replace("/", "-"))):
             return subdir.removesuffix(manifest_filename).removesuffix("/")
+    raise NotPackageRepository
 
 
 def get_rubygems_subdir(package, repo_url):
@@ -100,11 +99,10 @@ def get_composer_subdir(package, repo_url):
     repo_path = Path(repo.git_dir).parent
 
     subdirs = locate_file_in_repo(repo_path, manifest_filename)
-    if not subdirs:
-        raise NotPackageRepository
     for subdir in subdirs:
         if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
+    raise NotPackageRepository
 
 
 def get_cargo_subdir(package, repo_url):
@@ -114,11 +112,10 @@ def get_cargo_subdir(package, repo_url):
     repo_path = Path(repo.git_dir).parent
 
     subdirs = locate_file_in_repo(repo_path, manifest_filename)
-    if not subdirs:
-        raise NotPackageRepository
     for subdir in subdirs:
         if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
+    raise NotPackageRepository
 
 
 def get_pypi_subdir(package, repo_url):
@@ -126,6 +123,8 @@ def get_pypi_subdir(package, repo_url):
     There is no manifest file for pypi
     We work on the heuristic that python packages have a common pattern
     of putting library specific code into a directory named on the package
+    and then checking if the directory contains a __init__.py files
+    indicating to be a python module
     """
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
