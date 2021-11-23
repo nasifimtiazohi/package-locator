@@ -61,7 +61,7 @@ def test_get_composer_subdir():
 def test_locate_dir_in_repo():
     package = "django"
     path = Path(django_repo.git_dir).parent
-    assert locate_dir_in_repo(path, package) == package
+    assert "django" in locate_dir_in_repo(path, package)
 
 
 def test_get_pypi_subdir():

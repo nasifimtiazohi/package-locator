@@ -21,6 +21,10 @@ def test_rubygems():
 def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "django") == ("https://github.com/django/django", "")
     assert get_repository_url_and_subdir(PYPI, "rsa") == ("https://github.com/sybrenstuvel/python-rsa", "")
+    assert get_repository_url_and_subdir(PYPI, "hypothesis") == (
+        "https://github.com/HypothesisWorks/hypothesis",
+        "hypothesis-python/src",
+    )
 
 
 def test_composer():

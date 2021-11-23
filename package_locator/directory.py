@@ -6,7 +6,7 @@ from pathlib import Path
 from os.path import join, relpath
 import toml
 
-from package_locator.common import NotPackageRepository
+from package_locator.common import NotPackageRepository, search_for_github_repo
 
 
 def locate_file_in_repo(repo_path, target_file):
@@ -20,10 +20,12 @@ def locate_file_in_repo(repo_path, target_file):
 
 def locate_dir_in_repo(repo_path, target_dir):
     """return the top-level dir"""
+    candidates = []
     for root, dirs, files in os.walk(repo_path):
         for dir in dirs:
             if dir.endswith(target_dir):
-                return relpath(join(root, dir), repo_path)
+                candidates.append(relpath(join(root, dir), repo_path))
+    return candidates
 
 
 def get_package_name_from_npm_json(filepath):
@@ -122,7 +124,10 @@ def get_pypi_subdir(package, repo_url):
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
-    dir = locate_dir_in_repo(repo_path, package)
-    if not dir:
-        raise NotPackageRepository
-    return dir.removesuffix(package).removesuffix("/")
+    candidate_dirs = locate_dir_in_repo(repo_path, package)
+    init_filename = "__init__.py"
+    for dir in candidate_dirs:
+        init_files = locate_file_in_repo(join(repo_path, dir), init_filename)
+        if init_filename in init_files:
+            return dir.removesuffix(package).removesuffix("/")
+    raise NotPackageRepository
