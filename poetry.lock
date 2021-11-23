@@ -344,14 +344,6 @@ gitdb = ">=4.0.1,<5"
 typing-extensions = {version = ">=3.7.4.3", markers = "python_version < \"3.10\""}
 
 [[package]]
-name = "giturlparse"
-version = "0.10.0"
-description = "A Git URL parsing module (supports parsing and rewriting)"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
 name = "identify"
 version = "2.3.6"
 description = "File identification library for Python"
@@ -1096,7 +1088,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.1"
-content-hash = "cdb73a7c2adee4529d8912b8abb992f6ee5ad3e4ae0808c9a064dde49ffe0df8"
+content-hash = "fd5301bd9ac146101f2eef4b3ad21e2915ee6a909009a54fcb048a692f5ace4e"
 
 [metadata.files]
 alabaster = [
@@ -1266,10 +1258,6 @@ gitdb = [
 gitpython = [
     {file = "GitPython-3.1.24-py3-none-any.whl", hash = "sha256:dc0a7f2f697657acc8d7f89033e8b1ea94dd90356b2983bca89dc8d2ab3cc647"},
     {file = "GitPython-3.1.24.tar.gz", hash = "sha256:df83fdf5e684fef7c6ee2c02fc68a5ceb7e7e759d08b694088d0cacb4eba59e5"},
-]
-giturlparse = [
-    {file = "giturlparse-0.10.0-py2.py3-none-any.whl", hash = "sha256:04ba1a3a099c3093fa8d24a422913c6a9b2c2cd22bcffc939cf72e3e98f672d7"},
-    {file = "giturlparse-0.10.0.tar.gz", hash = "sha256:2595ab291d30717cda8474b874c9fd509f1b9802ad7f6968c36a45e4b13eb337"},
 ]
 identify = [
     {file = "identify-2.3.6-py2.py3-none-any.whl", hash = "sha256:8cb609a671d2f861ae7fe583711a43fd2faab0c892f39cbc4568b0c51b354238"},

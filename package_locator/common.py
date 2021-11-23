@@ -1,5 +1,5 @@
 import collections
-from giturlparse import parse
+from urllib.parse import urlparse, parse_qs
 import re
 
 CARGO = "Cargo"
@@ -14,6 +14,10 @@ ecosystems = [CARGO, COMPOSER, GO, MAVEN, NPM, NUGET, PYPI, RUBYGEMS]
 
 
 class NotPackageRepository(Exception):
+    pass
+
+
+class UnknownGitRepositoryDomain(Exception):
     pass
 
 
@@ -40,15 +44,40 @@ def flatten(dictionary, parent_key=False, separator="."):
     return dict(items)
 
 
+def get_base_repo_url(repo_url):
+    if not repo_url:
+        return None
+
+    parsed_url = urlparse(repo_url)
+    host = parsed_url.netloc
+
+    if host == "gitbox.apache.org" and "p" in parse_qs(parsed_url.query).keys():
+        project_name = parse_qs(parsed_url.query)["p"]
+        return "https://gitbox.apache.org/repos/asf/{}".format(project_name)
+
+    if host == "svn.opensymphony.com":
+        return repo_url
+
+    # below rule covers github, gitlab, bitbucket, foocode, eday, qt
+    sources = ["github", "gitlab", "bitbucket", "foocode", "eday", "q", "opendev"]
+    if not any([x in host for x in sources]):
+        raise UnknownGitRepositoryDomain
+
+    paths = [s.removesuffix(".git") for s in parsed_url.path.split("/")]
+    owner, repo = paths[1], paths[2]
+    return "https://{}/{}/{}".format(host, owner, repo)
+
+
 def search_for_github_repo(data):
     urls = set()
 
     data = flatten(data)
     for k in data.keys():
         if isinstance(data[k], str) and data[k].startswith("https://github.com") and " " not in data[k]:
-            parsed_url = parse(data[k])
-            if parsed_url.valid:
-                urls.add(parsed_url.url2https)
+            try:
+                urls.add(get_base_repo_url(data[k]))
+            except UnknownGitRepositoryDomain:
+                pass
 
     if not urls:
         url_pattern = r"(https?://[www.]?github.com[^\s|)|.]+)"
@@ -56,8 +85,9 @@ def search_for_github_repo(data):
             if isinstance(data[k], str):
                 candidates = re.findall(url_pattern, data[k])
                 for c in candidates:
-                    parsed_url = parse(c)
-                    if parsed_url.valid:
-                        urls.add("https://github.com/{}/{}".format(parsed_url.owner, parsed_url.repo))
+                    try:
+                        urls.add(get_base_repo_url(c))
+                    except UnknownGitRepositoryDomain:
+                        pass
 
     return urls

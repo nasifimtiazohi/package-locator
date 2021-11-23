@@ -1,31 +1,7 @@
 from package_locator.common import *
-from urllib.parse import urlparse, parse_qs
 from package_locator.directory import *
 import requests
 import json
-
-
-def get_base_repo_url(repo_url):
-    if not repo_url:
-        return None
-
-    parsed_url = urlparse(repo_url)
-    host = parsed_url.netloc
-
-    if host == "gitbox.apache.org" and "p" in parse_qs(parsed_url.query).keys():
-        project_name = parse_qs(parsed_url.query)["p"]
-        return "https://gitbox.apache.org/repos/asf/{}".format(project_name)
-
-    if host == "svn.opensymphony.com":
-        return repo_url
-
-    # below rule covers github, gitlab, bitbucket, foocode, eday, qt
-    sources = ["github", "gitlab", "bitbucket", "foocode", "eday", "q", "opendev"]
-    assert any([x in host for x in sources]), "unknown host domain for repository url: {}".format(repo_url)
-
-    paths = [s.removesuffix(".git") for s in parsed_url.path.split("/")]
-    owner, repo = paths[1], paths[2]
-    return "https://{}/{}/{}".format(host, owner, repo)
 
 
 def get_npm_location(package):

@@ -25,7 +25,6 @@ click = "^8.0.0"
 rich = "^10.3.0"
 PyYAML = "^5.4.1"
 requests = "^2.26.0"
-giturlparse = "^0.10.0"
 GitPython = "^3.1.24"
 toml = "^0.10.2"
 

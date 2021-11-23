@@ -14,7 +14,7 @@ def test_search_for_github_repo():
     package = "gradio"
     urls = search_pypi(package)
     assert len(urls) == 1
-    assert "https://github.com/gradio-app/gradio-UI.git" in urls
+    assert "https://github.com/gradio-app/gradio-UI" in urls
 
     package = "rsa"
     urls = search_pypi(package)
