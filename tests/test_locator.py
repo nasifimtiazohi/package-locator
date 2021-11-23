@@ -40,4 +40,4 @@ def test_get_base_repo_url():
 
 
 def test_temp():
-    print(get_repository_url_and_subdir(RUBYGEMS, "maruku"))
+    print(get_repository_url_and_subdir(RUBYGEMS, "docopt"))

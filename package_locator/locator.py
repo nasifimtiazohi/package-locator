@@ -30,7 +30,6 @@ def get_rubygems_location(package):
             return None
 
     urls = search_for_github_repo(data)
-    print("asdsad", urls)
     for url in urls:
         try:
             url = get_base_repo_url(url)

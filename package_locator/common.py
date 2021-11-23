@@ -73,14 +73,14 @@ def search_for_github_repo(data):
 
     data = flatten(data)
     for k in data.keys():
-        if isinstance(data[k], str) and data[k].startswith("https://github.com") and " " not in data[k]:
+        if isinstance(data[k], str) and "github.com" in data[k] and " " not in data[k]:
             try:
                 urls.add(get_base_repo_url(data[k]))
             except UnknownGitRepositoryDomain:
                 pass
 
     if not urls:
-        url_pattern = r"(https?://[www.]?github.com[^\s|)|.]+)"
+        url_pattern = r"(https?://[www.]?github.com[^\s|)]+)"
         for k in data.keys():
             if isinstance(data[k], str):
                 candidates = re.findall(url_pattern, data[k])

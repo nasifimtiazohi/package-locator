@@ -6,10 +6,12 @@ from pathlib import Path
 from os.path import join, relpath
 import toml
 
-from package_locator.common import NotPackageRepository, search_for_github_repo
+from package_locator.common import NotPackageRepository
 
 
 def locate_file_in_repo(repo_path, target_file):
+    """locate *filename"""
+
     candidates = []
     for root, dirs, files in os.walk(repo_path):
         for file in files:
