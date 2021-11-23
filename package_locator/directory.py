@@ -5,6 +5,7 @@ from git import Repo
 from pathlib import Path
 from os.path import join, relpath
 import toml
+import re
 
 from package_locator.common import NotPackageRepository
 
@@ -76,17 +77,20 @@ def get_npm_subdir(package, repo_url):
 
 
 def get_rubygems_subdir(package, repo_url):
-    manifest_filename = "{}.gemspec".format(package)
+    manifest_filename = ".gemspec".format(package)
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    target_manifest = locate_file_in_repo(repo_path, manifest_filename)
-    if not target_manifest:
-        raise NotPackageRepository
-    assert len(target_manifest) == 1
-    subdir = target_manifest[0].removesuffix(manifest_filename).removesuffix("/")
-    return subdir
+    candidate_manifests = locate_file_in_repo(repo_path, manifest_filename)
+    pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
+    for candidate in candidate_manifests:
+        with open(join(repo_path, candidate), "r") as f:
+            for line in f:
+                if re.search(pattern, line):
+                    subdir = Path(candidate).parent
+                    return str(subdir).removesuffix(".").removesuffix("/")
+    raise NotPackageRepository
 
 
 def get_composer_subdir(package, repo_url):
