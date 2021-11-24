@@ -74,3 +74,11 @@ def test_get_cargo_subdir():
     package = "depdive"
     repo_url = "https://github.com/diem/whackadep"
     assert get_cargo_subdir(package, repo_url) == "depdive"
+
+
+def test_pypi_wheel():
+    package = "django"
+    assert get_pypi_wheel(package) == "django/__init__.py"
+
+    package = "google-api-core"
+    assert get_pypi_wheel(package) == "google/__init__.py"

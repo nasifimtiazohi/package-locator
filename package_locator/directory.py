@@ -6,6 +6,9 @@ from pathlib import Path
 from os.path import join, relpath
 import toml
 import re
+import requests
+from zipfile import ZipFile
+import tarfile
 
 from package_locator.common import NotPackageRepository
 
@@ -116,6 +119,40 @@ def get_cargo_subdir(package, repo_url):
         if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
     raise NotPackageRepository
+
+
+def get_pypi_wheel(package):
+    # get download link for the latest wheel
+    url = "https://pypi.org/pypi/{}/json".format(package)
+    page = requests.get(url)
+    data = json.loads(page.content)
+    data = data["releases"]
+    latest_version = list(data.keys())[-1]
+    url = data[latest_version][-1]["url"]
+
+    # download wheel
+    temp_dir = tempfile.TemporaryDirectory()
+    path = temp_dir.name
+    compressed_file_name = "wheel.tar.gz"
+    dest_file = "{}/{}".format(path, compressed_file_name)
+    r = requests.get(url, stream=True)
+    with open(dest_file, "wb") as output_file:
+        output_file.write(r.content)
+
+    # extract file
+    t = tarfile.open(dest_file)
+    t.extractall(path)
+    t.close()
+
+    dirs = os.listdir(path)
+    for dir in dirs:
+        dirpath = join(path, dir)
+        init_files = locate_file_in_repo(dirpath, "__init__.py")
+        if not init_files:
+            continue
+        # we want to ge the the top-level init file
+        init_files.sort(key=lambda x: len(x.split("/")))
+        return init_files[0]
 
 
 def get_pypi_subdir(package, repo_url):
