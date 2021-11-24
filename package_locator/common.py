@@ -45,7 +45,7 @@ def flatten(dictionary, parent_key=False, separator="."):
 
 
 def get_base_repo_url(repo_url):
-    if not repo_url:
+    if not isinstance(repo_url, str):
         return None
 
     parsed_url = urlparse(repo_url)
@@ -62,7 +62,6 @@ def get_base_repo_url(repo_url):
     sources = ["github", "gitlab", "bitbucket", "foocode", "eday", "q", "opendev"]
     if not any([x in host for x in sources]):
         raise UnknownGitRepositoryDomain
-
     paths = [s.removesuffix(".git") for s in parsed_url.path.split("/")]
     owner, repo = paths[1], paths[2]
     return "https://{}/{}/{}".format(host, owner, repo)
@@ -70,13 +69,13 @@ def get_base_repo_url(repo_url):
 
 def search_for_github_repo(data):
     urls = set()
-    url_pattern = re.compile(r"(https?://[www.]?github.com[^\s|)]+)")
+    url_pattern = re.compile(r"(https?://[www.]?github.com[^\s|)|>|<]+)")
     data = flatten(data)
     for k in data.keys():
         if isinstance(data[k], str) and re.search(url_pattern, data[k]) and " " not in data[k]:
             try:
                 urls.add(get_base_repo_url(data[k]))
-            except UnknownGitRepositoryDomain:
+            except:
                 pass
 
     if not urls:
@@ -86,7 +85,7 @@ def search_for_github_repo(data):
                 for c in candidates:
                     try:
                         urls.add(get_base_repo_url(c))
-                    except UnknownGitRepositoryDomain:
+                    except:
                         pass
 
     return urls

@@ -6,7 +6,10 @@ from package_locator.common import *
 def test_npm():
     assert get_repository_url_and_subdir(NPM, "lodash") == ("https://github.com/lodash/lodash", "./")
     assert get_repository_url_and_subdir(NPM, "react") == ("https://github.com/facebook/react", "./packages/react")
-    assert get_repository_url_and_subdir(NPM, "babel-core") == ("https://github.com/babel/babel", "./packages/babel-core")
+    assert get_repository_url_and_subdir(NPM, "babel-core") == (
+        "https://github.com/babel/babel",
+        "./packages/babel-core",
+    )
     assert get_repository_url_and_subdir(NPM, "@babel/plugin-syntax-typescript") == (
         "https://github.com/babel/babel",
         "./packages/babel-plugin-syntax-typescript",
@@ -34,7 +37,7 @@ def test_pypi():
         "https://github.com/Azure/azure-sdk-for-python",
         "./sdk/storage/azure-storage-blob",
     )
-    
+    assert get_repository_url_and_subdir(PYPI, "pbr") == ("https://opendev.org/openstack/pbr", "./")
 
 
 def test_composer():
@@ -47,3 +50,8 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
+
+
+def test_temp():
+    print(get_repository_url_and_subdir(PYPI, "aiobotocore"))
+    print(get_repository_url_and_subdir(PYPI, "joblib"))

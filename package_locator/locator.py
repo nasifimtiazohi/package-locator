@@ -1,3 +1,4 @@
+from re import sub
 from package_locator.common import *
 from package_locator.directory import *
 import requests
@@ -13,8 +14,11 @@ def get_npm_location(package):
     directory = data["repository"].get("directory", None)
     if directory:
         return repo_url, directory
-    subdir = get_npm_subdir(package, repo_url)
-    return repo_url, subdir
+    try:
+        subdir = get_npm_subdir(package, repo_url)
+        return repo_url, subdir
+    except:
+        return None, None
 
 
 def get_rubygems_location(package):
@@ -24,10 +28,9 @@ def get_rubygems_location(package):
     if repo_url:
         try:
             subdir = get_rubygems_subdir(package, repo_url)
-            if subdir:
-                return repo_url, subdir
+            return repo_url, subdir
         except NotPackageRepository:
-            return None
+            pass
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -37,6 +40,7 @@ def get_rubygems_location(package):
             return url, subdir
         except NotPackageRepository:
             continue
+    return None, None
 
 
 def get_pypi_location(package):
@@ -46,10 +50,11 @@ def get_pypi_location(package):
     if repo_url:
         try:
             subdir = get_pypi_subdir(package, repo_url)
-            if subdir:
-                return repo_url, subdir
-        except NotPackageRepository:
-            return None
+            return repo_url, subdir
+        except NotPackageRepository as e:
+            pass
+        except UncertainSubdir as e:
+            return repo_url, None
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -57,8 +62,12 @@ def get_pypi_location(package):
             url = get_base_repo_url(url)
             subdir = get_pypi_subdir(package, url)
             return url, subdir
-        except NotPackageRepository:
+        except NotPackageRepository as e:
             continue
+        except UncertainSubdir as e:
+            return repo_url, None
+
+    return None, None
 
 
 def get_composer_location(package):
@@ -69,10 +78,9 @@ def get_composer_location(package):
     if repo_url:
         try:
             subdir = get_composer_subdir(package, repo_url)
-            if subdir:
-                return repo_url, subdir
+            return repo_url, subdir
         except NotPackageRepository:
-            return None
+            pass
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -82,6 +90,7 @@ def get_composer_location(package):
             return url, subdir
         except NotPackageRepository:
             continue
+    return None, None
 
 
 def get_cargo_location(package):
@@ -92,10 +101,9 @@ def get_cargo_location(package):
     if repo_url:
         try:
             subdir = get_cargo_subdir(package, repo_url)
-            if subdir:
-                return repo_url, subdir
+            return repo_url, subdir
         except NotPackageRepository:
-            return None
+            pass
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -105,6 +113,7 @@ def get_cargo_location(package):
             return url, subdir
         except NotPackageRepository:
             continue
+    return None, None
 
 
 def get_repository_url_and_subdir(ecosystem, package):
@@ -118,10 +127,11 @@ def get_repository_url_and_subdir(ecosystem, package):
         repo_url, subdir = get_composer_location(package)
     elif ecosystem == CARGO:
         repo_url, subdir = get_cargo_location(package)
-    
-    subdir = subdir.removesuffix('/').removesuffix('.')
-    if not subdir.startswith('./'):
-        subdir = './' + subdir
-    repo_url = get_base_repo_url(repo_url)
+
+    if repo_url and subdir is not None:
+        subdir = subdir.removesuffix("/").removesuffix(".")
+        if not subdir.startswith("./"):
+            subdir = "./" + subdir
+        repo_url = get_base_repo_url(repo_url)
 
     return repo_url, subdir

@@ -1,4 +1,3 @@
-from ntpath import realpath
 import tempfile
 import os
 import json
@@ -12,6 +11,10 @@ from zipfile import ZipFile
 import tarfile
 
 from package_locator.common import NotPackageRepository
+
+
+class UncertainSubdir(Exception):
+    pass
 
 
 def locate_file_in_dir(path, target_file):
@@ -190,6 +193,15 @@ def get_pypi_subdir(package, repo_url):
     if init_file:
         dirs = locate_file_in_dir(repo_path, init_file)
         if not dirs:
+            # do reverse matching
+            candidates = locate_file_in_dir(repo_path, "__init__.py")
+            for c in candidates:
+                if not init_file.endswith(c):
+                    candidates.remove(c)
+            if len(candidates) == 1:
+                return candidates[0]
+
+            # probably wrong package
             raise NotPackageRepository
         elif len(dirs) == 1:
             subdir = dirs[0]
@@ -208,3 +220,4 @@ def get_pypi_subdir(package, repo_url):
         for k in candidates.keys():
             if candidates[k] == len(pyfiles):
                 return relpath(k, repo_path)
+        raise UncertainSubdir
