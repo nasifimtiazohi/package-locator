@@ -26,10 +26,10 @@ temp_dir_e = tempfile.TemporaryDirectory()
 depdive_repo = Repo.clone_from(repo_url, temp_dir_e.name)
 
 
-def test_locate_file_in_repo():
+def test_locate_file_in_dir():
     file = "package.json"
     path = Path(react_repo.git_dir).parent
-    files = locate_file_in_repo(path, file)
+    files = locate_file_in_dir(path, file)
 
     assert "packages/react/{}".format(file) in files
     assert len(files) == 82

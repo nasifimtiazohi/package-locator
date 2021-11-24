@@ -13,7 +13,7 @@ import tarfile
 from package_locator.common import NotPackageRepository
 
 
-def locate_file_in_repo(repo_path, target_file):
+def locate_file_in_dir(repo_path, target_file):
     """locate *filename"""
 
     candidates = []
@@ -70,7 +70,7 @@ def get_npm_subdir(package, repo_url):
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         name = get_package_name_from_npm_json(join(repo_path, subdir))
         if name and (name.endswith(package) or name.replace("/", "-").endswith(package.replace("/", "-"))):
@@ -84,7 +84,7 @@ def get_rubygems_subdir(package, repo_url):
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    candidate_manifests = locate_file_in_repo(repo_path, manifest_filename)
+    candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
     pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
     for candidate in candidate_manifests:
         with open(join(repo_path, candidate), "r") as f:
@@ -101,7 +101,7 @@ def get_composer_subdir(package, repo_url):
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
@@ -114,7 +114,7 @@ def get_cargo_subdir(package, repo_url):
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
 
-    subdirs = locate_file_in_repo(repo_path, manifest_filename)
+    subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
             return subdir.removesuffix(manifest_filename).removesuffix("/")
@@ -147,7 +147,7 @@ def get_pypi_wheel(package):
     dirs = os.listdir(path)
     for dir in dirs:
         dirpath = join(path, dir)
-        init_files = locate_file_in_repo(dirpath, "__init__.py")
+        init_files = locate_file_in_dir(dirpath, "__init__.py")
         if not init_files:
             continue
         # we want to ge the the top-level init file
@@ -169,7 +169,7 @@ def get_pypi_subdir(package, repo_url):
     candidate_dirs = locate_dir_in_repo(repo_path, package)
     init_filename = "__init__.py"
     for dir in candidate_dirs:
-        init_files = locate_file_in_repo(join(repo_path, dir), init_filename)
+        init_files = locate_file_in_dir(join(repo_path, dir), init_filename)
         if init_filename in init_files:
             return dir.removesuffix(package).removesuffix("/")
     raise NotPackageRepository
