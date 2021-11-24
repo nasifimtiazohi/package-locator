@@ -127,24 +127,34 @@ def get_pypi_wheel_init_file(package):
     # get download link for the latest wheel
     url = "https://pypi.org/pypi/{}/json".format(package)
     page = requests.get(url)
-    data = json.loads(page.content)
-    data = data["releases"]
-    latest_version = list(data.keys())[-1]
-    url = data[latest_version][-1]["url"]
+    data = json.loads(page.content)["releases"]
+    data = {k: v for k, v in data.items() if v}
+    data = sorted(data.items(), key=lambda item: item[1][-1]["upload_time"])
+    url = data[-1][1][-1]["url"]
 
     # download wheel
     temp_dir = tempfile.TemporaryDirectory()
     path = temp_dir.name
-    compressed_file_name = "wheel.tar.gz"
-    dest_file = "{}/{}".format(path, compressed_file_name)
-    r = requests.get(url, stream=True)
-    with open(dest_file, "wb") as output_file:
-        output_file.write(r.content)
 
-    # extract file
-    t = tarfile.open(dest_file)
-    t.extractall(path)
-    t.close()
+    if url.endswith(".whl") or url.endswith(".tar.gz"):
+        compressed_file_name = "wheel.tar.gz"
+        dest_file = "{}/{}".format(path, compressed_file_name)
+        r = requests.get(url, stream=True)
+        with open(dest_file, "wb") as output_file:
+            output_file.write(r.content)
+            # extract file
+        t = tarfile.open(dest_file)
+        t.extractall(path)
+        t.close()
+    else:
+        compressed_file_name = "wheel.zip"
+        dest_file = "{}/{}".format(path, compressed_file_name)
+        r = requests.get(url, stream=True)
+        with open(dest_file, "wb") as output_file:
+            output_file.write(r.content)
+        z = ZipFile(dest_file, "r")
+        z.extractall(path)
+        z.close()
 
     dirs = os.listdir(path)
     for dir in dirs:
