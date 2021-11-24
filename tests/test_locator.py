@@ -29,6 +29,10 @@ def test_pypi():
         "https://github.com/HypothesisWorks/hypothesis",
         "hypothesis-python",
     )
+    assert get_repository_url_and_subdir(PYPI, "google-api-corez") == (
+        "https://github.com/googleapis/python-api-core",
+        "",
+    )
 
 
 def test_composer():
