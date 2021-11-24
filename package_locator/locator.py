@@ -109,12 +109,19 @@ def get_cargo_location(package):
 
 def get_repository_url_and_subdir(ecosystem, package):
     if ecosystem == NPM:
-        return get_npm_location(package)
+        repo_url, subdir = get_npm_location(package)
     elif ecosystem == PYPI:
-        return get_pypi_location(package)
+        repo_url, subdir = get_pypi_location(package)
     elif ecosystem == RUBYGEMS:
-        return get_rubygems_location(package)
+        repo_url, subdir = get_rubygems_location(package)
     elif ecosystem == COMPOSER:
-        return get_composer_location(package)
+        repo_url, subdir = get_composer_location(package)
     elif ecosystem == CARGO:
-        return get_cargo_location(package)
+        repo_url, subdir = get_cargo_location(package)
+    
+    subdir = subdir.removesuffix('/').removesuffix('.')
+    if not subdir.startswith('./'):
+        subdir = './' + subdir
+    repo_url = get_base_repo_url(repo_url)
+
+    return repo_url, subdir

@@ -45,7 +45,7 @@ def test_get_package_name_from_npm_json():
 def test_get_rubygems_subdir():
     package = "ahoy"
     repo_url = "https://github.com/matsadler/ahoy"
-    assert get_rubygems_subdir(package, repo_url) == ""
+    assert get_rubygems_subdir(package, repo_url) == "."
 
     package = "bundler"
     repo_url = "https://github.com/rubygems/rubygems"
@@ -73,7 +73,7 @@ def test_get_pypi_subdir():
 def test_get_cargo_subdir():
     package = "depdive"
     repo_url = "https://github.com/diem/whackadep"
-    assert get_cargo_subdir(package, repo_url) == "depdive"
+    assert get_cargo_subdir(package, repo_url) == "depdive/"
 
 
 def test_pypi_init_file():

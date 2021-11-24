@@ -75,7 +75,7 @@ def get_npm_subdir(package, repo_url):
     for subdir in subdirs:
         name = get_package_name_from_npm_json(join(repo_path, subdir))
         if name and (name.endswith(package) or name.replace("/", "-").endswith(package.replace("/", "-"))):
-            return subdir.removesuffix(manifest_filename).removesuffix("/")
+            return subdir.removesuffix(manifest_filename)
     raise NotPackageRepository
 
 
@@ -92,7 +92,7 @@ def get_rubygems_subdir(package, repo_url):
             for line in f:
                 if re.search(pattern, line):
                     subdir = Path(candidate).parent
-                    return str(subdir).removesuffix(".").removesuffix("/")
+                    return str(subdir)
     raise NotPackageRepository
 
 
@@ -105,7 +105,7 @@ def get_composer_subdir(package, repo_url):
     subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
-            return subdir.removesuffix(manifest_filename).removesuffix("/")
+            return subdir.removesuffix(manifest_filename)
     raise NotPackageRepository
 
 
@@ -118,7 +118,7 @@ def get_cargo_subdir(package, repo_url):
     subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
-            return subdir.removesuffix(manifest_filename).removesuffix("/")
+            return subdir.removesuffix(manifest_filename)
     raise NotPackageRepository
 
 
@@ -195,7 +195,7 @@ def get_pypi_subdir(package, repo_url):
             subdir = dirs[0]
         else:
             subdir = next((d for d in dirs if package in d.split("/")), None)
-        return subdir.removesuffix(init_file).removesuffix("/")
+        return subdir.removesuffix(init_file)
 
     else:
         # get top level py files
