@@ -53,5 +53,4 @@ def test_get_base_repo_url():
 
 
 def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "aiobotocore"))
-    print(get_repository_url_and_subdir(PYPI, "joblib"))
+    print(get_repository_url_and_subdir(PYPI, "tensorflow-addons"))

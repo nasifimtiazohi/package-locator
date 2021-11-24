@@ -46,7 +46,7 @@ def get_rubygems_location(package):
 def get_pypi_location(package):
     url = "https://pypi.org/pypi/{}/json".format(package)
     data = json.loads(requests.get(url).content)
-    repo_url = get_base_repo_url(data["info"].get("project_urls", {}).get("Source Code", None))
+    repo_url = get_base_repo_url(data.get("info", {}).get("project_urls", {}).get("Source Code", None))
     if repo_url:
         try:
             subdir = get_pypi_subdir(package, repo_url)
