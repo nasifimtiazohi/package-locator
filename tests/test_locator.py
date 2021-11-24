@@ -27,7 +27,12 @@ def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "rsa") == ("https://github.com/sybrenstuvel/python-rsa", "")
     assert get_repository_url_and_subdir(PYPI, "hypothesis") == (
         "https://github.com/HypothesisWorks/hypothesis",
-        "hypothesis-python",
+        "hypothesis-python/src",
+    )
+    assert get_repository_url_and_subdir(PYPI, "six") == ("https://github.com/benjaminp/six", ".")
+    assert get_repository_url_and_subdir(PYPI, "azure-storage-blob") == (
+        "https://github.com/Azure/azure-sdk-for-python",
+        "sdk/storage/azure-storage-blob",
     )
 
 
@@ -41,7 +46,3 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
-
-
-def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "setuptools"))

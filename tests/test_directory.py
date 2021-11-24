@@ -76,9 +76,6 @@ def test_get_cargo_subdir():
     assert get_cargo_subdir(package, repo_url) == "depdive"
 
 
-def test_pypi_wheel_init_file():
-    package = "django"
-    assert get_pypi_wheel_init_file(package) == "django/__init__.py"
-
-    package = "google-api-core"
-    assert get_pypi_wheel_init_file(package) == "google/__init__.py"
+def test_pypi_init_file():
+    path = Path(django_repo.git_dir).parent
+    assert get_pypi_init_file(path) == "django/__init__.py"
