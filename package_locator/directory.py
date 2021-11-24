@@ -1,3 +1,4 @@
+from ntpath import realpath
 import tempfile
 import os
 import json
@@ -14,13 +15,14 @@ from package_locator.common import NotPackageRepository
 
 
 def locate_file_in_dir(repo_path, target_file):
-    """locate *filename"""
+    """locate *filepath"""
 
     candidates = []
     for root, dirs, files in os.walk(repo_path):
         for file in files:
-            if file.endswith(target_file):
-                candidates.append(relpath(join(root, file), repo_path))
+            filepath = join(root, file)
+            if filepath.endswith(target_file):
+                candidates.append(relpath(filepath, repo_path))
     return candidates
 
 
@@ -121,7 +123,7 @@ def get_cargo_subdir(package, repo_url):
     raise NotPackageRepository
 
 
-def get_pypi_wheel(package):
+def get_pypi_wheel_init_file(package):
     # get download link for the latest wheel
     url = "https://pypi.org/pypi/{}/json".format(package)
     page = requests.get(url)
@@ -152,6 +154,7 @@ def get_pypi_wheel(package):
             continue
         # we want to ge the the top-level init file
         init_files.sort(key=lambda x: len(x.split("/")))
+        temp_dir.cleanup()
         return init_files[0]
 
 
@@ -166,10 +169,11 @@ def get_pypi_subdir(package, repo_url):
     temp_dir = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir.name)
     repo_path = Path(repo.git_dir).parent
-    candidate_dirs = locate_dir_in_repo(repo_path, package)
-    init_filename = "__init__.py"
-    for dir in candidate_dirs:
-        init_files = locate_file_in_dir(join(repo_path, dir), init_filename)
-        if init_filename in init_files:
-            return dir.removesuffix(package).removesuffix("/")
-    raise NotPackageRepository
+
+    wheel_init = get_pypi_wheel_init_file(package)
+    assert wheel_init, "no __init__.py file in wheel for {}".format(package)
+    dir = locate_file_in_dir(repo_path, wheel_init)
+    if not dir:
+        raise NotPackageRepository
+    assert len(dir) == 1, "more than one {} file in {} repo".format(wheel_init, package)
+    return dir[0].removesuffix(wheel_init).removesuffix("/")

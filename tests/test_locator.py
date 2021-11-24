@@ -16,6 +16,10 @@ def test_npm():
 def test_rubygems():
     assert get_repository_url_and_subdir(RUBYGEMS, "bundler") == ("https://github.com/rubygems/rubygems", "bundler")
     assert get_repository_url_and_subdir(RUBYGEMS, "a4nt") == ("https://github.com/ma2gedev/a4nt", "")
+    assert get_repository_url_and_subdir(RUBYGEMS, "safety_net_attestation") == (
+        "https://github.com/bdewater/safety_net_attestation",
+        "",
+    )
 
 
 def test_pypi():
@@ -23,11 +27,7 @@ def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "rsa") == ("https://github.com/sybrenstuvel/python-rsa", "")
     assert get_repository_url_and_subdir(PYPI, "hypothesis") == (
         "https://github.com/HypothesisWorks/hypothesis",
-        "hypothesis-python/src",
-    )
-    assert get_repository_url_and_subdir(RUBYGEMS, "safety_net_attestation") == (
-        "https://github.com/bdewater/safety_net_attestation",
-        "",
+        "hypothesis-python",
     )
 
 
@@ -41,7 +41,3 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
-
-
-def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "six"))
