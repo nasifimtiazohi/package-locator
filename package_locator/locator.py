@@ -46,7 +46,11 @@ def get_rubygems_location(package):
 def get_pypi_location(package):
     url = "https://pypi.org/pypi/{}/json".format(package)
     data = json.loads(requests.get(url).content)
-    repo_url = get_base_repo_url(data.get("info", {}).get("project_urls", {}).get("Source Code", None))
+    try:
+        repo_url = get_base_repo_url(data["info"]["project_urls"]["Source Code"])
+    except:
+        repo_url = None
+
     if repo_url:
         try:
             subdir = get_pypi_subdir(package, repo_url)
@@ -74,7 +78,11 @@ def get_composer_location(package):
     url = "https://repo.packagist.org/p2/{}.json".format(package)
     data = json.loads(requests.get(url).content)
     data = data["packages"][package][0]
-    repo_url = get_base_repo_url(data.get("source", {}).get("url", None))
+    try:
+        repo_url = get_base_repo_url(data["source"]["url"])
+    except:
+        repo_url = None
+
     if repo_url:
         try:
             subdir = get_composer_subdir(package, repo_url)
@@ -95,8 +103,7 @@ def get_composer_location(package):
 
 def get_cargo_location(package):
     url = "https://crates.io/api/v1/crates/{}".format(package)
-    data = json.loads(requests.get(url).content)
-    data = data["crate"]
+    data = json.loads(requests.get(url).content)["crate"]
     repo_url = get_base_repo_url(data.get("repository", None))
     if repo_url:
         try:

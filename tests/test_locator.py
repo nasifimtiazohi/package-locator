@@ -41,6 +41,9 @@ def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "pbr") == ("https://opendev.org/openstack/pbr", "./")
     assert get_repository_url_and_subdir(PYPI, "yappi") == ("https://github.com/sumerc/yappi", "./")
     assert get_repository_url_and_subdir(PYPI, "aiobotocore") == ("https://github.com/aio-libs/aiobotocore", "./")
+    assert get_repository_url_and_subdir(PYPI, "slacker") == ("https://github.com/os/slacker", "./")
+    assert get_repository_url_and_subdir(PYPI, "editdistance") == ("https://www.github.com/roy-ht/editdistance", "./")
+    assert get_repository_url_and_subdir(PYPI, "pycountry") == ("https://github.com/flyingcircusio/pycountry", "./")
 
 
 def test_composer():
@@ -53,3 +56,7 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
+
+
+def test_temp():
+    print(get_repository_url_and_subdir(PYPI, "pymc3"))

@@ -190,60 +190,52 @@ def get_pypi_subdir(package, repo_url):
     and then checking if the directory contains a __init__.py files
     indicating to be a python module
     """
+    with tempfile.TemporaryDirectory() as temp_dir_a, tempfile.TemporaryDirectory() as temp_dir_b:
+        repo = Repo.clone_from(repo_url, temp_dir_a)
+        repo_path = Path(repo.git_dir).parent
 
-    """TODO: convert it into a class"""
+        url = get_pypi_download_url(package)
+        path = download_pypi_package(url, temp_dir_b)
 
-    def temp_dir_cleanup():
-        temp_dir_a.cleanup()
-        temp_dir_b.cleanup()
+        init_file = get_pypi_init_file(path)
+        if init_file:
+            dirs = locate_file_in_dir(repo_path, init_file)
 
-    temp_dir_a = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(repo_url, temp_dir_a.name)
-    repo_path = Path(repo.git_dir).parent
+            if not dirs:
+                # do reverse matching
+                candidates = locate_file_in_dir(repo_path, "__init__.py")
+                candidates = [c for c in candidates if init_file.endswith(c)]
+                if len(candidates) == 1:
+                    subdir = ""
+                else:
+                    raise NotPackageRepository
 
-    url = get_pypi_download_url(package)
-    temp_dir_b = tempfile.TemporaryDirectory()
-    path = temp_dir_b.name
-    path = download_pypi_package(url, path)
+            elif len(dirs) == 1:
+                subdir = dirs[0]
 
-    init_file = get_pypi_init_file(path)
-    if init_file:
-        dirs = locate_file_in_dir(repo_path, init_file)
-        if not dirs:
-            # do reverse matching
-            candidates = locate_file_in_dir(repo_path, "__init__.py")
-            for c in candidates:
-                print(init_file, c)
-                if not init_file.endswith(c):
-                    candidates.remove(c)
-            if len(candidates) == 1:
-                subdir = ""
             else:
-                # probably wrong package
-                temp_dir_cleanup()
-                raise NotPackageRepository
-        elif len(dirs) == 1:
-            subdir = dirs[0]
+                if init_file in dirs:
+                    subdir = init_file
+                else:
+                    # heuristic: package name in
+                    dirs = [d for d in dirs if package in d.split("/")]
+                    if len(dirs) == 1:
+                        subdir = dirs[0]
+                    else:
+                        raise UncertainSubdir
+
+            return subdir.removesuffix(init_file)
+
         else:
-            subdir = next((d for d in dirs if package in d.split("/")), None)
-            if not subdir:
-                temp_dir_cleanup()
-                raise UncertainSubdir
-        temp_dir_cleanup()
-        return subdir.removesuffix(init_file)
+            # get top level py files
+            pyfiles = [f for f in os.listdir(path) if isfile(join(path, f)) and f.endswith(".py")]
+            candidates = {}
+            for root, dirs, files in os.walk(repo_path):
+                for file in files:
+                    if file in pyfiles:
+                        candidates[root] = candidates.get(root, 0) + 1
+            for k in candidates.keys():
+                if candidates[k] == len(pyfiles):
+                    return relpath(k, repo_path)
 
-    else:
-        # get top level py files
-        pyfiles = [f for f in os.listdir(path) if isfile(join(path, f)) and f.endswith(".py")]
-        candidates = {}
-        for root, dirs, files in os.walk(repo_path):
-            for file in files:
-                if file in pyfiles:
-                    candidates[root] = candidates.get(root, 0) + 1
-        for k in candidates.keys():
-            if candidates[k] == len(pyfiles):
-                temp_dir_cleanup()
-                return relpath(k, repo_path)
-
-        temp_dir_cleanup()
-        raise UncertainSubdir
+            raise UncertainSubdir
