@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "package-locator"
-version = "0.3.7"  # <<COOKIETEMPLE_FORCE_BUMP>>
+version = "0.3.8"  # <<COOKIETEMPLE_FORCE_BUMP>>
 description = "For a package, locate its source repository url and its relative path within the repository"
 authors = ["Nasif Imtiaz <nasifimtiaz88@gmail.com>"]
 license = "MIT"
