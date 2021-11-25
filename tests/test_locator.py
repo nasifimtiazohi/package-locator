@@ -44,6 +44,8 @@ def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "slacker") == ("https://github.com/os/slacker", "./")
     assert get_repository_url_and_subdir(PYPI, "editdistance") == ("https://www.github.com/roy-ht/editdistance", "./")
     assert get_repository_url_and_subdir(PYPI, "pycountry") == ("https://github.com/flyingcircusio/pycountry", "./")
+    assert get_repository_url_and_subdir(PYPI, "py4j") == ("https://github.com/bartdag/py4j", "./py4j-python/src")
+    assert get_repository_url_and_subdir(PYPI, "ply") == ("https://github.com/dabeaz/ply", "./")
 
 
 def test_composer():
@@ -59,4 +61,4 @@ def test_get_base_repo_url():
 
 
 def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "pymc3"))
+    print(get_repository_url_and_subdir(PYPI, "tensorflow-serving-api"))

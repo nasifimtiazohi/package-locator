@@ -1,4 +1,7 @@
+from os import cpu_count
 from re import sub
+
+from git import exc
 from package_locator.common import *
 from package_locator.directory import *
 import requests
@@ -70,6 +73,21 @@ def get_pypi_location(package):
             continue
         except UncertainSubdir as e:
             return repo_url, None
+
+    try:
+        homepage = data["info"]["home_page"]
+    except:
+        homepage = None
+    if homepage:
+        homepage = {"body": requests.get(homepage).text}
+        urls = search_for_github_repo(homepage)
+        for url in urls:
+            try:
+                url = get_base_repo_url(url)
+                subdir = get_pypi_subdir(package, url)
+                return url, subdir
+            except:
+                continue
 
     return None, None
 

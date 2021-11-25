@@ -59,7 +59,7 @@ def get_base_repo_url(repo_url):
         return repo_url
 
     # below rule covers github, gitlab, bitbucket, foocode, eday, qt
-    sources = ["github", "gitlab", "bitbucket", "foocode", "eday", "q", "opendev"]
+    sources = ["github", "gitlab", "bitbucket", "foocode", "eday", "q", "opendev", "foss.heptapod.net"]
     if not any([x in host for x in sources]):
         raise UnknownGitRepositoryDomain
     paths = [s.removesuffix(".git") for s in parsed_url.path.split("/")]
