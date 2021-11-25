@@ -21,7 +21,7 @@ def get_npm_location(package):
         subdir = get_npm_subdir(package, repo_url)
         return repo_url, subdir
     except:
-        return None, None
+        return repo_url, None
 
 
 def get_rubygems_location(package):
@@ -32,8 +32,8 @@ def get_rubygems_location(package):
         try:
             subdir = get_rubygems_subdir(package, repo_url)
             return repo_url, subdir
-        except NotPackageRepository:
-            pass
+        except:
+            return repo_url, None
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -41,7 +41,7 @@ def get_rubygems_location(package):
             url = get_base_repo_url(url)
             subdir = get_rubygems_subdir(package, url)
             return url, subdir
-        except NotPackageRepository:
+        except:
             continue
     return None, None
 
@@ -58,9 +58,7 @@ def get_pypi_location(package):
         try:
             subdir = get_pypi_subdir(package, repo_url)
             return repo_url, subdir
-        except NotPackageRepository as e:
-            pass
-        except UncertainSubdir as e:
+        except:
             return repo_url, None
 
     urls = search_for_github_repo(data)
@@ -69,10 +67,8 @@ def get_pypi_location(package):
             url = get_base_repo_url(url)
             subdir = get_pypi_subdir(package, url)
             return url, subdir
-        except NotPackageRepository as e:
+        except:
             continue
-        except UncertainSubdir as e:
-            return repo_url, None
 
     try:
         homepage = data["info"]["home_page"]
@@ -105,8 +101,8 @@ def get_composer_location(package):
         try:
             subdir = get_composer_subdir(package, repo_url)
             return repo_url, subdir
-        except NotPackageRepository:
-            pass
+        except:
+            return repo_url, None
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -114,7 +110,7 @@ def get_composer_location(package):
             url = get_base_repo_url(url)
             subdir = get_composer_subdir(package, url)
             return url, subdir
-        except NotPackageRepository:
+        except:
             continue
     return None, None
 
@@ -127,8 +123,8 @@ def get_cargo_location(package):
         try:
             subdir = get_cargo_subdir(package, repo_url)
             return repo_url, subdir
-        except NotPackageRepository:
-            pass
+        except:
+            return repo_url, None
 
     urls = search_for_github_repo(data)
     for url in urls:
@@ -136,7 +132,7 @@ def get_cargo_location(package):
             url = get_base_repo_url(url)
             subdir = get_cargo_subdir(package, url)
             return url, subdir
-        except NotPackageRepository:
+        except:
             continue
     return None, None
 
