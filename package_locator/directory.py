@@ -140,7 +140,7 @@ def get_pypi_download_url(package):
         return url
 
 
-def download_file(url, path):
+def download_pypi_package(url, path):
     if url.endswith(".tar.gz"):
         compressed_file_name = "wheel.tar.gz"
         dest_file = "{}/{}".format(path, compressed_file_name)
@@ -161,6 +161,16 @@ def download_file(url, path):
         z.extractall(path)
         z.close()
 
+    for root, dirs, files in os.walk(path):
+        for dir in dirs:
+            if dir.endswith("-info"):
+                return root
+
+        for file in files:
+            if file.endswith("setup.py"):
+                return root
+    return path
+
 
 def get_pypi_init_file(path):
     init_files = locate_file_in_dir(path, "__init__.py")
@@ -180,6 +190,13 @@ def get_pypi_subdir(package, repo_url):
     and then checking if the directory contains a __init__.py files
     indicating to be a python module
     """
+
+    """TODO: convert it into a class"""
+
+    def temp_dir_cleanup():
+        temp_dir_a.cleanup()
+        temp_dir_b.cleanup()
+
     temp_dir_a = tempfile.TemporaryDirectory()
     repo = Repo.clone_from(repo_url, temp_dir_a.name)
     repo_path = Path(repo.git_dir).parent
@@ -187,7 +204,7 @@ def get_pypi_subdir(package, repo_url):
     url = get_pypi_download_url(package)
     temp_dir_b = tempfile.TemporaryDirectory()
     path = temp_dir_b.name
-    download_file(url, path)
+    path = download_pypi_package(url, path)
 
     init_file = get_pypi_init_file(path)
     if init_file:
@@ -196,17 +213,23 @@ def get_pypi_subdir(package, repo_url):
             # do reverse matching
             candidates = locate_file_in_dir(repo_path, "__init__.py")
             for c in candidates:
+                print(init_file, c)
                 if not init_file.endswith(c):
                     candidates.remove(c)
             if len(candidates) == 1:
-                return candidates[0]
-
-            # probably wrong package
-            raise NotPackageRepository
+                subdir = ""
+            else:
+                # probably wrong package
+                temp_dir_cleanup()
+                raise NotPackageRepository
         elif len(dirs) == 1:
             subdir = dirs[0]
         else:
             subdir = next((d for d in dirs if package in d.split("/")), None)
+            if not subdir:
+                temp_dir_cleanup()
+                raise UncertainSubdir
+        temp_dir_cleanup()
         return subdir.removesuffix(init_file)
 
     else:
@@ -219,5 +242,8 @@ def get_pypi_subdir(package, repo_url):
                     candidates[root] = candidates.get(root, 0) + 1
         for k in candidates.keys():
             if candidates[k] == len(pyfiles):
+                temp_dir_cleanup()
                 return relpath(k, repo_path)
+
+        temp_dir_cleanup()
         raise UncertainSubdir

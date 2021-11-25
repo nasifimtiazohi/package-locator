@@ -23,6 +23,7 @@ def test_rubygems():
         "https://github.com/bdewater/safety_net_attestation",
         "./",
     )
+    assert get_repository_url_and_subdir(PYPI, "aiobotocore") == ("https://github.com/aio-libs/aiobotocore", "./")
 
 
 def test_pypi():
@@ -38,6 +39,8 @@ def test_pypi():
         "./sdk/storage/azure-storage-blob",
     )
     assert get_repository_url_and_subdir(PYPI, "pbr") == ("https://opendev.org/openstack/pbr", "./")
+    assert get_repository_url_and_subdir(PYPI, "yappi") == ("https://github.com/sumerc/yappi", "./")
+    assert get_repository_url_and_subdir(PYPI, "aiobotocore") == ("https://github.com/aio-libs/aiobotocore", "./")
 
 
 def test_composer():
@@ -50,7 +53,3 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
-
-
-def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "tensorflow-addons"))
