@@ -83,20 +83,37 @@ def get_npm_subdir(package, repo_url):
 
 
 def get_rubygems_subdir(package, repo_url):
-    manifest_filename = ".gemspec".format(package)
-    temp_dir = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(repo_url, temp_dir.name)
-    repo_path = Path(repo.git_dir).parent
+    with tempfile.TemporaryDirectory() as temp_dir:
+        manifest_filename = ".gemspec".format(package)
+        repo = Repo.clone_from(repo_url, temp_dir)
+        repo_path = Path(repo.git_dir).parent
 
-    candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
-    pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
-    for candidate in candidate_manifests:
-        with open(join(repo_path, candidate), "r") as f:
-            for line in f:
-                if re.search(pattern, line):
-                    subdir = Path(candidate).parent
-                    return str(subdir)
-    raise NotPackageRepository
+        candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
+        for candidate in candidate_manifests:
+            # first check the gemspec name
+            if candidate.split("/")[-1] == "{}.gemspec".format(package):
+                return str(Path(candidate).parent)
+            else:
+                # check gem name within the file
+                pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
+                with open(join(repo_path, candidate), "r") as f:
+                    if any([re.search(pattern, line) for line in f]):
+                        return str(Path(candidate).parent)
+
+        # match top-level ruby files
+        with tempfile.TemporaryDirectory() as temp_dir_b:
+            url = get_rubygem_download_url(package)
+            path = download_ruby_gem(url, temp_dir_b)
+            # a heuristic based on lib
+            if "lib" in os.listdir(path):
+                path = join(path, "lib")
+                libfiles = [f for f in os.listdir(path) if f.endswith(".rb")]
+                for root, dirs, files in os.walk(repo_path):
+                    for dir in dirs:
+                        if dir == "lib":
+                            if all([f in os.listdir(join(root, dir)) for f in libfiles]):
+                                return relpath(root, repo_path)
+        raise UncertainSubdir
 
 
 def get_composer_subdir(package, repo_url):
@@ -125,6 +142,34 @@ def get_cargo_subdir(package, repo_url):
     raise NotPackageRepository
 
 
+def download_ruby_gem(url, path):
+    dest_file = "gem.tar.gz"
+    dest_file = "{}/{}".format(path, dest_file)
+    r = requests.get(url, stream=True)
+    with open(dest_file, "wb") as output_file:
+        output_file.write(r.content)
+        # extract file
+    t = tarfile.open(dest_file)
+    t.extractall(path)
+
+    # extract again
+    dest_file = "data.tar.gz"
+    dest_file = join(path, dest_file)
+    t = tarfile.open(dest_file)
+    t.extractall(path)
+
+    t.close()
+    return path
+
+
+def get_rubygem_download_url(package):
+    url = "https://rubygems.org/api/v1/gems/{}.json".format(package)
+    page = requests.get(url)
+    data = json.loads(page.content)
+    version = data["version"]
+    return "https://rubygems.org/downloads/{}-{}.gem".format(package, version)
+
+
 def get_pypi_download_url(package):
     # get download link for the latest wheel
     url = "https://pypi.org/pypi/{}/json".format(package)
@@ -142,18 +187,18 @@ def get_pypi_download_url(package):
 
 def download_pypi_package(url, path):
     if url.endswith(".tar.gz"):
-        compressed_file_name = "wheel.tar.gz"
-        dest_file = "{}/{}".format(path, compressed_file_name)
+        dest_file = "wheel.tar.gz"
+        dest_file = "{}/{}".format(path, dest_file)
         r = requests.get(url, stream=True)
         with open(dest_file, "wb") as output_file:
             output_file.write(r.content)
-            # extract file
+        # extract file
         t = tarfile.open(dest_file)
         t.extractall(path)
         t.close()
     else:
-        compressed_file_name = "wheel.zip"
-        dest_file = "{}/{}".format(path, compressed_file_name)
+        dest_file = "wheel.zip"
+        dest_file = "{}/{}".format(path, dest_file)
         r = requests.get(url, stream=True)
         with open(dest_file, "wb") as output_file:
             output_file.write(r.content)

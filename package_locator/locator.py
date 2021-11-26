@@ -20,7 +20,8 @@ def get_npm_location(package):
     try:
         subdir = get_npm_subdir(package, repo_url)
         return repo_url, subdir
-    except:
+    except Exception as e:
+        print(e)
         return repo_url, None
 
 
@@ -32,7 +33,8 @@ def get_rubygems_location(package):
         try:
             subdir = get_rubygems_subdir(package, repo_url)
             return repo_url, subdir
-        except:
+        except Exception as e:
+            print(e)
             return repo_url, None
 
     urls = search_for_github_repo(data)
@@ -41,7 +43,8 @@ def get_rubygems_location(package):
             url = get_base_repo_url(url)
             subdir = get_rubygems_subdir(package, url)
             return url, subdir
-        except:
+        except Exception as e:
+            print(e)
             continue
     return None, None
 

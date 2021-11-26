@@ -23,7 +23,7 @@ def test_rubygems():
         "https://github.com/bdewater/safety_net_attestation",
         "./",
     )
-    assert get_repository_url_and_subdir(PYPI, "aiobotocore") == ("https://github.com/aio-libs/aiobotocore", "./")
+    assert get_repository_url_and_subdir(RUBYGEMS, "builder") == ("https://github.com/jimweirich/builder", "./")
 
 
 def test_pypi():
@@ -46,6 +46,7 @@ def test_pypi():
     assert get_repository_url_and_subdir(PYPI, "pycountry") == ("https://github.com/flyingcircusio/pycountry", "./")
     assert get_repository_url_and_subdir(PYPI, "py4j") == ("https://github.com/bartdag/py4j", "./py4j-python/src")
     assert get_repository_url_and_subdir(PYPI, "ply") == ("https://github.com/dabeaz/ply", "./")
+    assert get_repository_url_and_subdir(PYPI, "aiobotocore") == ("https://github.com/aio-libs/aiobotocore", "./")
 
 
 def test_composer():
@@ -58,7 +59,3 @@ def test_cargo():
 
 def test_get_base_repo_url():
     assert get_base_repo_url("https://github.com/php-fig/log.git/tree/3.0.0") == "https://github.com/php-fig/log"
-
-
-def test_temp():
-    print(get_repository_url_and_subdir(PYPI, "benbotasync"))
