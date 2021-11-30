@@ -36,9 +36,9 @@ Features
 --------
 
 * For a given package, package-locator locates its source code repository and the sub-directory within the repository the package resides in. 
-* Covers packages from npm, Pypi, RubyGems, Composer, and Cargo.
+* Covers packages from npm, PyPI, RubyGems, Composer, and Cargo.
 * Locates repository from metadata collected from registry APIs. 
-* Validates repository and locates sub-directory through a set of heuristics for each package ecosystem. For npm, Composer, and Cargo packages, package-locator looks at the manifest file (:code:`package.json`, :code:`composer.json`, and :code:`Cargo.toml`) to locate package specific code. For RubyGems and Pypi packages, package-locator either looks at the manifest file (:code:`gemspec` file) or compares the files present in the registry with the files present in the repository.  
+* Validates repository and locates sub-directory through a set of heuristics for each package ecosystem. For npm, Composer, and Cargo packages, package-locator looks at the manifest file (:code:`package.json`, :code:`composer.json`, and :code:`Cargo.toml`) to locate package specific code. For RubyGems and PyPI packages, package-locator either looks at the manifest file (:code:`gemspec` file) or compares the files present in the registry with the files present in the repository.  
 
 
 Installation
