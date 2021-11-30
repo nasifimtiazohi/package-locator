@@ -92,7 +92,10 @@
 <section id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline"></a></h2>
 <ul class="simple">
-<li><p>TODO</p></li>
+<li><p>For a given package, package-locator locates its source code repository and the sub-directory within the repository the package resides in.</p></li>
+<li><p>Covers packages from npm, Pypi, RubyGems, Composer, and Cargo.</p></li>
+<li><p>Locates repository from metadata collected from registry APIs.</p></li>
+<li><p>Validates repository and locates sub-directory through a set of heuristics for each package ecosystem. For npm, Composer, and Cargo packages, package-locator looks at the manifest file (<code class="code docutils literal notranslate"><span class="pre">package.json</span></code>, <code class="code docutils literal notranslate"><span class="pre">composer.json</span></code>, and <code class="code docutils literal notranslate"><span class="pre">Cargo.toml</span></code>) to locate package specific code. For RubyGems and Pypi packages, package-locator either looks at the manifest file (<code class="code docutils literal notranslate"><span class="pre">gemspec</span></code> file) or compares the files present in the registry with the files present in the repository.</p></li>
 </ul>
 </section>
 <section id="installation">
@@ -104,7 +107,8 @@
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h2>
-<p>Please see the <a class="reference external" href="https://package-locator.readthedocs.io/en/latest/usage.html">Command-line Reference</a> for details.</p>
+<p><code class="code docutils literal notranslate"><span class="pre">from</span> <span class="pre">package_locator.locator</span> <span class="pre">import</span> <span class="pre">get_repository_url_and_subdir</span></code>
+The function takes two inputs - ecosystem and package. The ecosystem names need to be provided as per defined within package-locator. You can import <cite>from package-locator.common import CARGO, NPM, PYPI, COMPOSER, RUBYGEMS</cite> and then use the constant values to indicate the ecosystem name. The package name is unique within each ecosystem. The function returns the source code repository URL and the sub-directory within the repository where the input package resides. For example, <code class="code docutils literal notranslate"><span class="pre">get_repository_url_and_subdir(NPM,</span> <span class="pre">&quot;react&quot;)</span></code> call returns <code class="code docutils literal notranslate"><span class="pre">(&quot;https://github.com/facebook/react&quot;,</span> <span class="pre">&quot;./packages/react&quot;)</span></code>.</p>
 </section>
 <section id="credits">
 <h2>Credits<a class="headerlink" href="#credits" title="Permalink to this headline"></a></h2>
