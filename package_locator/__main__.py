@@ -5,7 +5,7 @@ from rich import traceback
 
 
 @click.command()
-@click.version_option(version="0.3.11", message=click.style("package-locator Version: 0.3.11"))
+@click.version_option(version="0.4.0", message=click.style("package-locator Version: 0.4.0"))
 def main() -> None:
     """package-locator."""
 
