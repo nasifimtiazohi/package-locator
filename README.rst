@@ -56,8 +56,7 @@ Usage
 ..
     <!-- Please see the `Command-line Reference <Usage_>`_ for details. -->
 
-:code:`from package_locator.locator import get_repository_url_and_subdir` 
-The function takes two inputs - ecosystem and package. The ecosystem names need to be provided as per defined within package-locator. You can import `from package-locator.common import CARGO, NPM, PYPI, COMPOSER, RUBYGEMS` and then use the constant values to indicate the ecosystem name. The package name is unique within each ecosystem. The function returns the source code repository URL and the sub-directory within the repository where the input package resides. For example, :code:`get_repository_url_and_subdir(NPM, "react")` call returns :code:`("https://github.com/facebook/react", "./packages/react")`.
+:code:`from package_locator.locator import get_repository_url_and_subdir` is the primary function offered by package-locator. The function takes two inputs - ecosystem and package. The ecosystem names need to be provided as per defined within package-locator. You can import :code:`from package-locator.common import CARGO, NPM, PYPI, COMPOSER, RUBYGEMS` and then use the constant values to indicate the ecosystem name. The function returns the source code repository URL and the sub-directory within the repository where the input package resides in. For example, :code:`get_repository_url_and_subdir(NPM, "react")` call returns :code:`("https://github.com/facebook/react", "./packages/react")`.
 
 
 Credits
