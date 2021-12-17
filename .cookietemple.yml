@@ -15,5 +15,5 @@ email: nasifimtiaz88@gmail.com
 project_name: package-locator
 project_short_description: For a package, locate its source repository url and its
   relative path within the repository
-version: 0.4.0
+version: 0.4.1
 license: MIT
