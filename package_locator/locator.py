@@ -123,10 +123,4 @@ def get_repository_url_and_subdir(ecosystem, package):
     elif ecosystem == CARGO:
         repo_url, subdir = get_cargo_location(package)
 
-    if repo_url and subdir is not None:
-        subdir = subdir.removesuffix("/").removesuffix(".")
-        if not subdir.startswith("./"):
-            subdir = "./" + subdir
-        repo_url = get_base_repo_url(repo_url)
-
-    return repo_url, subdir
+    return get_base_repo_url(repo_url), postprocess_subdir(subdir)

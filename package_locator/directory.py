@@ -18,6 +18,13 @@ class UncertainSubdir(Exception):
     pass
 
 
+def postprocess_subdir(subdir):
+    subdir = subdir.removesuffix("/").removesuffix(".")
+    if not subdir.startswith("./"):
+        subdir = "./" + subdir
+    return subdir
+
+
 def locate_subdir(ecosystem, package, repo_url, commit=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         repo = Repo.clone_from(repo_url, temp_dir)
@@ -36,7 +43,7 @@ def locate_subdir(ecosystem, package, repo_url, commit=None):
                 subdir = get_cargo_subdir(package, repo_path)
             elif ecosystem == PYPI:
                 subdir = get_pypi_subdir(package, repo_path)
-            return subdir
+            return postprocess_subdir(subdir)
         except Exception as e:
             raise e
 
