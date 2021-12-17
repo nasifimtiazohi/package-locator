@@ -1,11 +1,19 @@
-from os import cpu_count
-from re import sub
-
-from git import exc
 from package_locator.common import *
 from package_locator.directory import *
 import requests
 import json
+
+
+def search_github_url_in_json_data(ecosystem, package, json_data):
+    urls = search_for_github_repo(json_data)
+    for url in urls:
+        try:
+            repo_url = get_base_repo_url(url)
+            subdir = locate_subdir(ecosystem, package, repo_url)
+            return repo_url, subdir
+        except Exception as e:
+            continue
+    return None, None
 
 
 def get_npm_location(package):
@@ -18,7 +26,7 @@ def get_npm_location(package):
     if directory:
         return repo_url, directory
     try:
-        subdir = get_npm_subdir(package, repo_url)
+        subdir = locate_subdir(NPM, package, repo_url)
         return repo_url, subdir
     except Exception as e:
         print(e)
@@ -31,22 +39,13 @@ def get_rubygems_location(package):
     repo_url = get_base_repo_url(data.get("source_code_uri", None))
     if repo_url:
         try:
-            subdir = get_rubygems_subdir(package, repo_url)
+            subdir = locate_subdir(RUBYGEMS, package, repo_url)
             return repo_url, subdir
         except Exception as e:
             print(e)
             return repo_url, None
 
-    urls = search_for_github_repo(data)
-    for url in urls:
-        try:
-            url = get_base_repo_url(url)
-            subdir = get_rubygems_subdir(package, url)
-            return url, subdir
-        except Exception as e:
-            print(e)
-            continue
-    return None, None
+    return search_github_url_in_json_data(RUBYGEMS, package, data)
 
 
 def get_pypi_location(package):
@@ -59,34 +58,22 @@ def get_pypi_location(package):
 
     if repo_url:
         try:
-            subdir = get_pypi_subdir(package, repo_url)
+            subdir = locate_subdir(PYPI, package, repo_url)
             return repo_url, subdir
         except:
             return repo_url, None
 
-    urls = search_for_github_repo(data)
-    for url in urls:
-        try:
-            url = get_base_repo_url(url)
-            subdir = get_pypi_subdir(package, url)
-            return url, subdir
-        except:
-            continue
+    repo_url, subdir = search_github_url_in_json_data(PYPI, package, data)
+    if repo_url:
+        return repo_url, subdir
 
     try:
-        homepage = data["info"]["home_page"]
+        homepage = {"body": requests.get(data["info"]["home_page"]).text}
+        repo_url, subdir = search_github_url_in_json_data(PYPI, package, homepage)
+        if repo_url:
+            return repo_url, subdir
     except:
-        homepage = None
-    if homepage:
-        homepage = {"body": requests.get(homepage).text}
-        urls = search_for_github_repo(homepage)
-        for url in urls:
-            try:
-                url = get_base_repo_url(url)
-                subdir = get_pypi_subdir(package, url)
-                return url, subdir
-            except:
-                continue
+        pass
 
     return None, None
 
@@ -102,20 +89,12 @@ def get_composer_location(package):
 
     if repo_url:
         try:
-            subdir = get_composer_subdir(package, repo_url)
+            subdir = locate_subdir(COMPOSER, package, repo_url)
             return repo_url, subdir
         except:
             return repo_url, None
 
-    urls = search_for_github_repo(data)
-    for url in urls:
-        try:
-            url = get_base_repo_url(url)
-            subdir = get_composer_subdir(package, url)
-            return url, subdir
-        except:
-            continue
-    return None, None
+    return search_github_url_in_json_data(COMPOSER, package, data)
 
 
 def get_cargo_location(package):
@@ -124,20 +103,12 @@ def get_cargo_location(package):
     repo_url = get_base_repo_url(data.get("repository", None))
     if repo_url:
         try:
-            subdir = get_cargo_subdir(package, repo_url)
+            subdir = locate_subdir(CARGO, package, repo_url)
             return repo_url, subdir
         except:
             return repo_url, None
 
-    urls = search_for_github_repo(data)
-    for url in urls:
-        try:
-            url = get_base_repo_url(url)
-            subdir = get_cargo_subdir(package, url)
-            return url, subdir
-        except:
-            continue
-    return None, None
+    return search_github_url_in_json_data(CARGO, package, data)
 
 
 def get_repository_url_and_subdir(ecosystem, package):

@@ -1,20 +1,44 @@
 import tempfile
 import os
 import json
-from git import Repo
+from git import Repo, exc
 from pathlib import Path
 from os.path import join, relpath, isfile
+from gitdb.db.base import CompoundDB
 import toml
 import re
 import requests
 from zipfile import ZipFile
 import tarfile
 
-from package_locator.common import NotPackageRepository
+from package_locator.common import CARGO, COMPOSER, NPM, PYPI, RUBYGEMS, NotPackageRepository
 
 
 class UncertainSubdir(Exception):
     pass
+
+
+def locate_subdir(ecosystem, package, repo_url, commit=None):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        repo = Repo.clone_from(repo_url, temp_dir)
+        if commit:
+            repo.git.checkout(commit)
+        repo_path = Path(repo.git_dir).parent
+
+        try:
+            if ecosystem == NPM:
+                subdir = get_npm_subdir(package, repo_path)
+            elif ecosystem == RUBYGEMS:
+                subdir = get_rubygems_subdir(package, repo_path)
+            elif ecosystem == COMPOSER:
+                subdir = get_composer_subdir(package, repo_path)
+            elif ecosystem == CARGO:
+                subdir = get_cargo_subdir(package, repo_path)
+            elif ecosystem == PYPI:
+                subdir = get_pypi_subdir(package, repo_path)
+            return subdir
+        except Exception as e:
+            raise e
 
 
 def locate_file_in_dir(path, target_file):
@@ -68,12 +92,8 @@ def get_package_name_from_cargo_toml(filepath):
             return None
 
 
-def get_npm_subdir(package, repo_url):
+def get_npm_subdir(package, repo_path):
     manifest_filename = "package.json"
-    temp_dir = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(repo_url, temp_dir.name)
-    repo_path = Path(repo.git_dir).parent
-
     subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         name = get_package_name_from_npm_json(join(repo_path, subdir))
@@ -82,46 +102,38 @@ def get_npm_subdir(package, repo_url):
     raise NotPackageRepository
 
 
-def get_rubygems_subdir(package, repo_url):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        manifest_filename = ".gemspec".format(package)
-        repo = Repo.clone_from(repo_url, temp_dir)
-        repo_path = Path(repo.git_dir).parent
+def get_rubygems_subdir(package, repo_path):
+    manifest_filename = ".gemspec".format(package)
+    candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
+    for candidate in candidate_manifests:
+        # first check the gemspec name
+        if candidate.split("/")[-1] == "{}.gemspec".format(package):
+            return str(Path(candidate).parent)
+        else:
+            # check gem name within the file
+            pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
+            with open(join(repo_path, candidate), "r") as f:
+                if any([re.search(pattern, line) for line in f]):
+                    return str(Path(candidate).parent)
 
-        candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
-        for candidate in candidate_manifests:
-            # first check the gemspec name
-            if candidate.split("/")[-1] == "{}.gemspec".format(package):
-                return str(Path(candidate).parent)
-            else:
-                # check gem name within the file
-                pattern = re.compile(r"""name(\s*)=(\s*)("|'){}("|')""".format(package))
-                with open(join(repo_path, candidate), "r") as f:
-                    if any([re.search(pattern, line) for line in f]):
-                        return str(Path(candidate).parent)
-
-        # match top-level ruby files
-        with tempfile.TemporaryDirectory() as temp_dir_b:
-            url = get_rubygem_download_url(package)
-            path = download_ruby_gem(url, temp_dir_b)
-            # a heuristic based on lib
-            if "lib" in os.listdir(path):
-                path = join(path, "lib")
-                libfiles = [f for f in os.listdir(path) if f.endswith(".rb")]
-                for root, dirs, files in os.walk(repo_path):
-                    for dir in dirs:
-                        if dir == "lib":
-                            if all([f in os.listdir(join(root, dir)) for f in libfiles]):
-                                return relpath(root, repo_path)
-        raise UncertainSubdir
+    # match top-level ruby files
+    with tempfile.TemporaryDirectory() as temp_dir_b:
+        url = get_rubygem_download_url(package)
+        path = download_ruby_gem(url, temp_dir_b)
+        # a heuristic based on lib
+        if "lib" in os.listdir(path):
+            path = join(path, "lib")
+            libfiles = [f for f in os.listdir(path) if f.endswith(".rb")]
+            for root, dirs, files in os.walk(repo_path):
+                for dir in dirs:
+                    if dir == "lib":
+                        if all([f in os.listdir(join(root, dir)) for f in libfiles]):
+                            return relpath(root, repo_path)
+    raise UncertainSubdir
 
 
-def get_composer_subdir(package, repo_url):
+def get_composer_subdir(package, repo_path):
     manifest_filename = "composer.json"
-    temp_dir = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(repo_url, temp_dir.name)
-    repo_path = Path(repo.git_dir).parent
-
     subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_composer_json(join(repo_path, subdir)) == package:
@@ -129,12 +141,8 @@ def get_composer_subdir(package, repo_url):
     raise NotPackageRepository
 
 
-def get_cargo_subdir(package, repo_url):
+def get_cargo_subdir(package, repo_path):
     manifest_filename = "Cargo.toml"
-    temp_dir = tempfile.TemporaryDirectory()
-    repo = Repo.clone_from(repo_url, temp_dir.name)
-    repo_path = Path(repo.git_dir).parent
-
     subdirs = locate_file_in_dir(repo_path, manifest_filename)
     for subdir in subdirs:
         if get_package_name_from_cargo_toml(join(repo_path, subdir)) == package:
@@ -227,7 +235,7 @@ def get_pypi_init_file(path):
         return None
 
 
-def get_pypi_subdir(package, repo_url):
+def get_pypi_subdir(package, repo_path):
     """
     There is no manifest file for pypi
     We work on the heuristic that python packages have a common pattern
@@ -235,12 +243,9 @@ def get_pypi_subdir(package, repo_url):
     and then checking if the directory contains a __init__.py files
     indicating to be a python module
     """
-    with tempfile.TemporaryDirectory() as temp_dir_a, tempfile.TemporaryDirectory() as temp_dir_b:
-        repo = Repo.clone_from(repo_url, temp_dir_a)
-        repo_path = Path(repo.git_dir).parent
-
+    with tempfile.TemporaryDirectory() as temp_dir:
         url = get_pypi_download_url(package)
-        path = download_pypi_package(url, temp_dir_b)
+        path = download_pypi_package(url, temp_dir)
 
         init_file = get_pypi_init_file(path)
         if init_file:

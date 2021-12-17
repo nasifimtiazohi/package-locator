@@ -1,3 +1,4 @@
+from zipfile import PyZipFile
 from git import repo
 from package_locator import locator
 from package_locator.common import NPM
@@ -45,17 +46,17 @@ def test_get_package_name_from_npm_json():
 def test_get_rubygems_subdir():
     package = "ahoy"
     repo_url = "https://github.com/matsadler/ahoy"
-    assert get_rubygems_subdir(package, repo_url) == "."
+    assert locate_subdir(RUBYGEMS, package, repo_url) == "."
 
     package = "bundler"
     repo_url = "https://github.com/rubygems/rubygems"
-    assert get_rubygems_subdir(package, repo_url) == "bundler"
+    assert locate_subdir(RUBYGEMS, package, repo_url) == "bundler"
 
 
 def test_get_composer_subdir():
     package = "psr/log"
     repo_url = "https://github.com/php-fig/log"
-    assert get_composer_subdir(package, repo_url) == ""
+    assert locate_subdir(COMPOSER, package, repo_url) == ""
 
 
 def test_locate_dir_in_repo():
@@ -67,15 +68,21 @@ def test_locate_dir_in_repo():
 def test_get_pypi_subdir():
     package = "django"
     repo_url = "https://github.com/django/django"
-    assert get_pypi_subdir(package, repo_url) == ""
+    assert locate_subdir(PYPI, package, repo_url) == ""
 
 
 def test_get_cargo_subdir():
     package = "depdive"
     repo_url = "https://github.com/diem/whackadep"
-    assert get_cargo_subdir(package, repo_url) == "depdive/"
+    assert locate_subdir(CARGO, package, repo_url) == "depdive/"
 
 
 def test_pypi_init_file():
     path = Path(django_repo.git_dir).parent
     assert get_pypi_init_file(path) == "django/__init__.py"
+
+
+def test_commit_subdir():
+    package = "foreign-types"
+    repo_url = "https://github.com/sfackler/foreign-types"
+    assert locate_subdir(CARGO, package, repo_url, "5ae74bfe45f38b0849f8131585c638e741bf0234") == ""
