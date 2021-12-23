@@ -159,7 +159,7 @@ def get_cargo_subdir(package, repo_path):
 
 def download_ruby_gem(url, path):
     dest_file = "gem.tar.gz"
-    dest_file = "{}/{}".format(path, dest_file)
+    dest_file = join(path, dest_file)
     r = requests.get(url, stream=True)
     with open(dest_file, "wb") as output_file:
         output_file.write(r.content)
@@ -203,7 +203,7 @@ def get_pypi_download_url(package):
 def download_pypi_package(url, path):
     if url.endswith(".tar.gz"):
         dest_file = "wheel.tar.gz"
-        dest_file = "{}/{}".format(path, dest_file)
+        dest_file = join(path, dest_file)
         r = requests.get(url, stream=True)
         with open(dest_file, "wb") as output_file:
             output_file.write(r.content)
@@ -213,7 +213,7 @@ def download_pypi_package(url, path):
         t.close()
     else:
         dest_file = "wheel.zip"
-        dest_file = "{}/{}".format(path, dest_file)
+        dest_file = join(path, dest_file)
         r = requests.get(url, stream=True)
         with open(dest_file, "wb") as output_file:
             output_file.write(r.content)
@@ -259,7 +259,8 @@ def get_pypi_subdir(package, repo_path):
             dirs = locate_file_in_dir(repo_path, init_file)
 
             if not dirs:
-                # do reverse matching
+                # do reverse matching as
+                # registry path can have extra suffixes
                 candidates = locate_file_in_dir(repo_path, "__init__.py")
                 candidates = [c for c in candidates if init_file.endswith(c)]
                 if len(candidates) == 1:
@@ -268,13 +269,16 @@ def get_pypi_subdir(package, repo_path):
                     raise NotPackageRepository
 
             elif len(dirs) == 1:
+                # main heuristic
+                # path to __init__.py file in registry matches with a path in repo
                 subdir = dirs[0]
 
             else:
                 if init_file in dirs:
                     subdir = init_file
                 else:
-                    # heuristic: package name in
+                    # heuristic: package name in the directory
+                    # as hyphenated packages may break into multiple directories in registry
                     dirs = [d for d in dirs if package in d.split("/")]
                     if len(dirs) == 1:
                         subdir = dirs[0]
@@ -284,7 +288,7 @@ def get_pypi_subdir(package, repo_path):
             return subdir.removesuffix(init_file)
 
         else:
-            # get top level py files
+            # get top level py files and see which repo directory matches
             pyfiles = [f for f in os.listdir(path) if isfile(join(path, f)) and f.endswith(".py")]
             candidates = {}
             for root, dirs, files in os.walk(repo_path):
