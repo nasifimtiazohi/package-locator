@@ -10,6 +10,7 @@ import re
 import requests
 from zipfile import ZipFile
 import tarfile
+from version_differ.version_differ import get_package_version_source_url, PIP
 
 from package_locator.common import CARGO, COMPOSER, NPM, PYPI, RUBYGEMS, NotPackageRepository
 
@@ -25,7 +26,7 @@ def postprocess_subdir(subdir):
     return subdir
 
 
-def locate_subdir(ecosystem, package, repo_url, commit=None):
+def locate_subdir(ecosystem, package, repo_url, commit=None, version=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         repo = Repo.clone_from(repo_url, temp_dir)
         if commit:
@@ -36,13 +37,13 @@ def locate_subdir(ecosystem, package, repo_url, commit=None):
             if ecosystem == NPM:
                 subdir = get_npm_subdir(package, repo_path)
             elif ecosystem == RUBYGEMS:
-                subdir = get_rubygems_subdir(package, repo_path)
+                subdir = get_rubygems_subdir(package, repo_path, version)
             elif ecosystem == COMPOSER:
                 subdir = get_composer_subdir(package, repo_path)
             elif ecosystem == CARGO:
                 subdir = get_cargo_subdir(package, repo_path)
             elif ecosystem == PYPI:
-                subdir = get_pypi_subdir(package, repo_path)
+                subdir = get_pypi_subdir(package, repo_path, version)
             return postprocess_subdir(subdir)
         except Exception as e:
             raise e
@@ -109,7 +110,7 @@ def get_npm_subdir(package, repo_path):
     raise NotPackageRepository
 
 
-def get_rubygems_subdir(package, repo_path):
+def get_rubygems_subdir(package, repo_path, version):
     manifest_filename = ".gemspec".format(package)
     candidate_manifests = locate_file_in_dir(repo_path, manifest_filename)
     for candidate in candidate_manifests:
@@ -125,7 +126,7 @@ def get_rubygems_subdir(package, repo_path):
 
     # match top-level ruby files
     with tempfile.TemporaryDirectory() as temp_dir_b:
-        url = get_rubygem_download_url(package)
+        url = get_rubygem_download_url(package, version)
         path = download_ruby_gem(url, temp_dir_b)
         # a heuristic based on lib
         if "lib" in os.listdir(path):
@@ -177,7 +178,10 @@ def download_ruby_gem(url, path):
     return path
 
 
-def get_rubygem_download_url(package):
+def get_rubygem_download_url(package, version):
+    if version:
+        return get_package_version_source_url(RUBYGEMS, package, version)
+
     url = "https://rubygems.org/api/v1/gems/{}.json".format(package)
     page = requests.get(url)
     data = json.loads(page.content)
@@ -185,7 +189,10 @@ def get_rubygem_download_url(package):
     return "https://rubygems.org/downloads/{}-{}.gem".format(package, version)
 
 
-def get_pypi_download_url(package):
+def get_pypi_download_url(package, version):
+    if version:
+        return get_package_version_source_url(PIP, package, version)
+
     # get download link for the latest wheel
     url = "https://pypi.org/pypi/{}/json".format(package)
     page = requests.get(url)
@@ -242,7 +249,7 @@ def get_pypi_init_file(path):
         return None
 
 
-def get_pypi_subdir(package, repo_path):
+def get_pypi_subdir(package, repo_path, version):
     """
     There is no manifest file for pypi
     We work on the heuristic that python packages have a common pattern
@@ -251,7 +258,7 @@ def get_pypi_subdir(package, repo_path):
     indicating to be a python module
     """
     with tempfile.TemporaryDirectory() as temp_dir:
-        url = get_pypi_download_url(package)
+        url = get_pypi_download_url(package, version)
         path = download_pypi_package(url, temp_dir)
 
         init_file = get_pypi_init_file(path)

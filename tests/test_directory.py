@@ -86,3 +86,16 @@ def test_commit_subdir():
     package = "foreign-types"
     repo_url = "https://github.com/sfackler/foreign-types"
     assert locate_subdir(CARGO, package, repo_url, "5ae74bfe45f38b0849f8131585c638e741bf0234") == "./"
+
+
+def test_commit_version():
+    assert (
+        locate_subdir(
+            PYPI,
+            "pyrsistent",
+            "https://github.com/tobgu/pyrsistent",
+            commit="637e52ecab9a8a61b2ac16410a6d4994396d9966",
+            version="0.9.4",
+        )
+        == "./"
+    )
