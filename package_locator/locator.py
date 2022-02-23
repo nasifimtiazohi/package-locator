@@ -12,6 +12,8 @@ def search_github_url_in_json_data(ecosystem, package, json_data):
             subdir = locate_subdir(ecosystem, package, repo_url)
             return repo_url, subdir
         except Exception as e:
+            if repo_url!= None:
+                return repo_url, None
             continue
     return None, None
 
