@@ -125,4 +125,6 @@ def get_repository_url_and_subdir(ecosystem, package):
     elif ecosystem == CARGO:
         repo_url, subdir = get_cargo_location(package)
 
-    return get_base_repo_url(repo_url), postprocess_subdir(subdir)
+    if subdir != None:
+        return get_base_repo_url(repo_url), postprocess_subdir(subdir)
+    return get_base_repo_url(repo_url), None
