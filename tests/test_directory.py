@@ -1,7 +1,3 @@
-from zipfile import PyZipFile
-from git import repo
-from package_locator import locator
-from package_locator.common import NPM
 import tempfile
 from package_locator.directory import *
 from os.path import join

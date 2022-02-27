@@ -1,7 +1,7 @@
 import tempfile
 import os
 import json
-from git import Repo, exc
+from git import Repo
 from pathlib import Path
 from os.path import join, relpath, isfile
 from gitdb.db.base import CompoundDB
@@ -29,8 +29,9 @@ def postprocess_subdir(subdir):
 def locate_subdir(ecosystem, package, repo_url, commit=None, version=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         repo = Repo.clone_from(repo_url, temp_dir)
+        head = repo.head.object.hexsha
         if commit:
-            repo.git.checkout(commit)
+            repo.git.checkout(commit, force=True)
         repo_path = Path(repo.git_dir).parent
 
         try:
@@ -44,6 +45,8 @@ def locate_subdir(ecosystem, package, repo_url, commit=None, version=None):
                 subdir = get_cargo_subdir(package, repo_path)
             elif ecosystem == PYPI:
                 subdir = get_pypi_subdir(package, repo_path, version)
+
+            repo.git.checkout(commit, force=True)
             return postprocess_subdir(subdir)
         except Exception as e:
             raise e

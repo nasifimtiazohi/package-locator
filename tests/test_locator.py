@@ -1,4 +1,3 @@
-from requests.api import get
 from package_locator.locator import *
 from package_locator.common import *
 
