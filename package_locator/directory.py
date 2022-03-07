@@ -195,7 +195,7 @@ def get_rubygem_download_url(package, version):
 
 def get_pypi_download_url(package, version):
     if version:
-        return get_package_version_source_url(PIP, package, version)
+        return get_package_version_source_url(PIP, package, version, wheel = False)
 
     # get download link for the latest wheel
     url = "https://pypi.org/pypi/{}/json".format(package)
@@ -206,8 +206,8 @@ def get_pypi_download_url(package, version):
     data = sorted(data.items(), key=lambda item: item[1][-1]["upload_time"])
     if data:
         data = data[-1][1]
-        ## search for wheel distribution
-        url = next((x["url"] for x in data if x["url"].endswith(".whl")), data[-1]["url"])
+        ## search for source distribution
+        url = next((x["url"] for x in data if x["url"].endswith(".tar.gz")), data[-1]["url"])
         return url
 
 
