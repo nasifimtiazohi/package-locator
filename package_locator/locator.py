@@ -12,6 +12,8 @@ def search_github_url_in_json_data(ecosystem, package, json_data):
             subdir = locate_subdir(ecosystem, package, repo_url)
             return repo_url, subdir
         except Exception as e:
+            if repo_url!= None:
+                return repo_url, None
             continue
     return None, None
 
@@ -123,4 +125,6 @@ def get_repository_url_and_subdir(ecosystem, package):
     elif ecosystem == CARGO:
         repo_url, subdir = get_cargo_location(package)
 
-    return get_base_repo_url(repo_url), postprocess_subdir(subdir)
+    if subdir != None:
+        return get_base_repo_url(repo_url), postprocess_subdir(subdir)
+    return get_base_repo_url(repo_url), None
