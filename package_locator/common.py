@@ -69,7 +69,7 @@ def get_base_repo_url(repo_url):
 
 def search_for_github_repo(data):
     urls = set()
-    url_pattern = re.compile(r"""https?:\/\/(?:www\.)?github\.com[^\s)|<|>]+""")
+    url_pattern = re.compile(r"""https?:\/\/(?:www\.)?github\.com[^\s|)|<|>|"]+""")
     data = flatten(data)
     for k in data.keys():
         if isinstance(data[k], str) and re.search(url_pattern, data[k]) and " " not in data[k]:
