@@ -4,7 +4,6 @@ import json
 from git import Repo
 from pathlib import Path
 from os.path import join, relpath, isfile
-from gitdb.db.base import CompoundDB
 import toml
 import re
 import requests
@@ -20,6 +19,9 @@ class UncertainSubdir(Exception):
 
 
 def postprocess_subdir(subdir):
+    if not subdir:
+        return
+
     subdir = subdir.removesuffix("/").removesuffix(".")
     if not subdir.startswith("./"):
         subdir = "./" + subdir
@@ -29,7 +31,6 @@ def postprocess_subdir(subdir):
 def locate_subdir(ecosystem, package, repo_url, commit=None, version=None):
     with tempfile.TemporaryDirectory() as temp_dir:
         repo = Repo.clone_from(repo_url, temp_dir)
-        head = repo.head.object.hexsha
         if commit:
             repo.git.checkout(commit, force=True)
         repo_path = Path(repo.git_dir).parent
