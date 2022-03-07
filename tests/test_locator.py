@@ -61,4 +61,4 @@ def test_get_base_repo_url():
 
 
 def test_null_subdir():
-    print(get_repository_url_and_subdir(CARGO, "rustc-ap-rustc_ast_passes"))
+    assert get_repository_url_and_subdir(CARGO, "rustc-ap-rustc_ast_passes")[1] is None

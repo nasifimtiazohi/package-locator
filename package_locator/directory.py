@@ -19,7 +19,7 @@ class UncertainSubdir(Exception):
 
 
 def postprocess_subdir(subdir):
-    if not subdir:
+    if subdir is None:
         return
 
     subdir = subdir.removesuffix("/").removesuffix(".")
